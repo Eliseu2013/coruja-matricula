@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 90" width="100%" height="100%">
+  <!-- FAETERJ-Rio Logo Vector -->
+  <defs>
+    <linearGradient id="faeterjBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#091b36"/>
+    </linearGradient>
+    <linearGradient id="corujaGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <!-- Crest Icon: Graduation Cap & Academic Torch -->
+  <g transform="translate(10, 8)">
+    <rect x="0" y="0" width="68" height="68" rx="16" fill="url(#faeterjBlue)"/>
+    <!-- Academic Cap -->
+    <path d="M 34,18 L 56,29 L 34,40 L 12,29 Z" fill="url(#corujaGold)"/>
+    <path d="M 22,34 L 22,48 C 22,54 46,54 46,48 L 46,34" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="56" y1="29" x2="56" y2="46" stroke="url(#corujaGold)" stroke-width="2"/>
+    <circle cx="56" cy="48" r="2.5" fill="url(#corujaGold)"/>
+  </g>
+  <!-- FAETERJ-Rio Typography -->
+  <text x="90" y="44" font-family="'Plus Jakarta Sans', Arial, Helvetica, sans-serif" font-size="32" font-weight="900" fill="#0f3b7a" letter-spacing="-0.5">FAETERJ<tspan fill="#d97706">-Rio</tspan></text>
+  <text x="92" y="60" font-family="'Plus Jakarta Sans', Arial, Helvetica, sans-serif" font-size="8.5" font-weight="800" fill="#1e293b" letter-spacing="0.5">FACULDADE DE EDUCAÇÃO TECNOLÓGICA</text>
+  <text x="92" y="72" font-family="'Plus Jakarta Sans', Arial, Helvetica, sans-serif" font-size="8" font-weight="700" fill="#64748b" letter-spacing="0.5">UNIDADE FERNANDO MOTA &#8226; FAETEC / SECTI</text>
+</svg>

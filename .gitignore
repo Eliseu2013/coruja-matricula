@@ -1,0 +1,44 @@
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+
+# Node & Package Managers
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.antigravity/
+
+# Local backups & uploads
+backups/*.zip
+data/backups/
+
+# Dados de execução (contêm dados pessoais - LGPD)
+data/*.json
+!data/semestres.json
+!data/configuracoes.json
+# Lista real de convocados (nomes e inscrições do ENEM) nunca vai para o Git; só o exemplo
+data/convocados.json
+!data/convocados.example.json
+backups/
+
+# Ferramentas de IA / editor
+.claude/
+
+# Cobertura de testes
+coverage/

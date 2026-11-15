@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de Convocados | FAETERJ-Rio Coruja</title>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="apiClient.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+  <link rel="stylesheet" href="tailwind-login.css">
+</head>
+<body class="min-h-screen bg-slate-100 flex flex-col text-slate-800">
+
+  <header class="w-full border-b border-blue-900 bg-[#0f3b7a] text-white px-4 sm:px-6 py-2.5 flex items-center justify-between shadow-sm">
+    <div class="flex items-center space-x-2">
+      <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-amber-400">
+        <i class="fa-solid fa-graduation-cap"></i>
+      </div>
+      <div>
+        <span class="font-extrabold text-sm text-white tracking-tight">FAETERJ-Rio (Quintino)</span>
+        <span class="block text-[11px] text-blue-100" id="usuarioLogado">Secretaria Acadêmica</span>
+      </div>
+    </div>
+    <button type="button" id="btnSair" class="flex items-center space-x-2 text-xs text-white hover:bg-white/10 px-3 py-1.5 rounded-lg border border-white/20 font-semibold">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      <span>Sair</span>
+    </button>
+  </header>
+
+  <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <div>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">Lista de Convocados</h1>
+      <p class="text-sm text-slate-600 mt-1 max-w-3xl">
+        Importe o PDF da chamada publicado pela FAETERJ-Rio. Só quem está na lista consegue fazer o 1º acesso no portal, usando a <strong>inscrição do ENEM</strong>. Cada inscrição cria um acesso só.
+      </p>
+    </div>
+
+    <div id="alertBox" class="hidden p-4 rounded-xl text-sm border flex items-start space-x-3">
+      <i id="alertIcon" class="fa-solid fa-circle-exclamation mt-0.5 text-base"></i>
+      <div id="alertMessage" class="flex-1 font-medium"></div>
+    </div>
+
+    <!-- Importar PDF -->
+    <section class="bg-white border border-slate-200/90 rounded-2xl shadow-sm p-5 sm:p-6 relative overflow-hidden">
+      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0f3b7a] via-blue-600 to-amber-400"></div>
+      <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+        <i class="fa-solid fa-file-pdf text-red-600"></i> Importar PDF da chamada
+      </h2>
+
+      <label for="arquivoPdf" id="areaArquivo" class="mt-4 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-300 hover:border-[#0f3b7a] rounded-xl bg-slate-50 px-4 py-8 cursor-pointer text-center">
+        <i class="fa-solid fa-cloud-arrow-up text-3xl text-[#0f3b7a]"></i>
+        <span class="text-sm font-bold text-slate-800" id="nomeArquivo">Clique para escolher o PDF ou arraste aqui</span>
+        <span class="text-xs text-slate-500">Ex.: 1aChamadaListaEspera_1oSemestre2026_FAETERJ-Rio.pdf (até 5 MB)</span>
+        <input type="file" id="arquivoPdf" accept="application/pdf,.pdf" class="sr-only">
+      </label>
+
+      <div id="previa" class="hidden mt-5 space-y-4">
+        <div class="flex flex-wrap items-center gap-2" id="previaResumo"></div>
+        <ul id="previaAvisos" class="hidden text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-1 list-disc list-inside"></ul>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-xl max-h-80 overflow-y-auto">
+          <table class="w-full text-xs">
+            <thead class="bg-slate-100 text-slate-600 uppercase tracking-wider text-[10px] sticky top-0">
+              <tr>
+                <th class="text-left px-3 py-2">Turno</th>
+                <th class="text-left px-3 py-2">Modalidade</th>
+                <th class="text-left px-3 py-2">Ordem</th>
+                <th class="text-left px-3 py-2">Nome</th>
+                <th class="text-left px-3 py-2">Nota</th>
+                <th class="text-left px-3 py-2">Inscrição do ENEM</th>
+              </tr>
+            </thead>
+            <tbody id="previaTabela" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+
+        <fieldset class="space-y-2">
+          <legend class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Como salvar</legend>
+          <label class="flex items-start gap-2 text-sm">
+            <input type="radio" name="modo" value="adicionar" checked class="mt-1">
+            <span><strong>Adicionar à lista atual</strong> <span class="text-slate-500">— para 2ª chamada, lista de espera etc. Quem já está na lista continua.</span></span>
+          </label>
+          <label class="flex items-start gap-2 text-sm">
+            <input type="radio" name="modo" value="substituir" class="mt-1">
+            <span><strong>Substituir a lista inteira</strong> <span class="text-slate-500">— apaga a lista atual. Acessos já criados continuam valendo.</span></span>
+          </label>
+        </fieldset>
+
+        <div class="flex flex-col sm:flex-row gap-2 sm:justify-end">
+          <button type="button" id="btnCancelar" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs uppercase tracking-wider hover:bg-slate-50">Cancelar</button>
+          <button type="button" id="btnSalvar" class="px-4 py-2.5 rounded-xl bg-[#0f3b7a] hover:bg-[#1e40af] text-white font-extrabold text-xs uppercase tracking-wider shadow-md flex items-center justify-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i><span id="btnSalvarTexto">Salvar lista</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lista atual -->
+    <section class="bg-white border border-slate-200/90 rounded-2xl shadow-sm p-5 sm:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-list-check text-[#0f3b7a]"></i> Lista atual
+        </h2>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <select id="filtroTurno" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+            <option value="">Todos os turnos</option>
+            <option value="MATUTINO">Matutino</option>
+            <option value="NOTURNO">Noturno</option>
+          </select>
+          <select id="filtroAcesso" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+            <option value="">Todos</option>
+            <option value="com">Já criaram acesso</option>
+            <option value="sem">Aguardando 1º acesso</option>
+          </select>
+          <input type="search" id="busca" placeholder="Buscar nome ou inscrição" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs w-full sm:w-56">
+        </div>
+      </div>
+
+      <div id="statusLista" class="mt-4 p-3.5 rounded-xl border text-sm"></div>
+
+      <div class="overflow-x-auto border border-slate-200 rounded-xl mt-4">
+        <table class="w-full text-xs">
+          <thead class="bg-slate-100 text-slate-600 uppercase tracking-wider text-[10px]">
+            <tr>
+              <th class="text-left px-3 py-2">Turno</th>
+              <th class="text-left px-3 py-2">Modalidade</th>
+              <th class="text-left px-3 py-2">Nome</th>
+              <th class="text-left px-3 py-2">Inscrição do ENEM</th>
+              <th class="text-left px-3 py-2">Acesso no portal</th>
+            </tr>
+          </thead>
+          <tbody id="listaTabela" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+      <p id="listaVazia" class="hidden text-center text-sm text-slate-500 py-6">Nenhum candidato encontrado.</p>
+    </section>
+  </main>
+
+  <footer class="w-full border-t border-slate-200 bg-white py-4 px-6 text-center text-xs text-slate-500">
+    FAETERJ-Rio &bull; Acesso restrito à equipe &bull; Ações registradas na auditoria (LGPD)
+  </footer>
+
+  <script src="convocados.js"></script>
+</body>
+</html>

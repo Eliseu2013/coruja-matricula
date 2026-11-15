@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "codigo": "2025.1",
+    "ano": 2025,
+    "periodo": 1,
+    "data_inicio": "2025-02-03",
+    "data_fim": "2025-07-11",
+    "vagas_totais": 120,
+    "ativo": false,
+    "status": "Encerrado",
+    "criado_em": "2026-09-27T14:52:35.379Z"
+  },
+  {
+    "id": 2,
+    "codigo": "2025.2",
+    "ano": 2025,
+    "periodo": 2,
+    "data_inicio": "2025-08-04",
+    "data_fim": "2025-12-19",
+    "vagas_totais": 120,
+    "ativo": false,
+    "status": "Encerrado",
+    "criado_em": "2026-09-27T14:52:35.379Z"
+  },
+  {
+    "id": 3,
+    "codigo": "2026.1",
+    "ano": 2026,
+    "periodo": 1,
+    "data_inicio": "2026-02-02",
+    "data_fim": "2026-07-10",
+    "vagas_totais": 120,
+    "ativo": false,
+    "status": "Encerrado",
+    "criado_em": "2026-09-27T14:52:35.379Z"
+  },
+  {
+    "id": 4,
+    "codigo": "2026.2",
+    "ano": 2026,
+    "periodo": 2,
+    "data_inicio": "2026-08-03",
+    "data_fim": "2026-12-18",
+    "vagas_totais": 120,
+    "ativo": true,
+    "status": "Aberto",
+    "criado_em": "2026-09-27T14:52:35.379Z"
+  }
+]

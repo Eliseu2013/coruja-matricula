@@ -1,0 +1,44 @@
+﻿{
+  "name": "coruja-matricula",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "test": "node --test \"tests/*.test.js\"",
+    "backup": "node backup.js",
+    "lint": "node scripts/lint.js",
+    "definir-senha": "node scripts/definir-senha.js",
+    "build:css": "tailwindcss -c tailwind.config.cjs -i tailwind.input.css -o public/tailwind.css --minify && tailwindcss -c tailwind.login.config.cjs -i tailwind.input.css -o public/tailwind-login.css --minify"
+  },
+  "dependencies": {
+    "@google/genai": "^2.4.0",
+    "archiver": "^8.0.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "node-cron": "^4.6.0",
+    "pdfjs-dist": "4.10.38",
+    "pg": "^8.23.0"
+  },
+  "overrides": {
+    "minimatch": "^11.0.1"
+  },
+  "allowScripts": {
+    "bcrypt@6.0.0": true
+  },
+  "devDependencies": {
+    "@tailwindcss/container-queries": "^0.1.1",
+    "@tailwindcss/forms": "^0.5.10",
+    "tailwindcss": "^3.4.17"
+  }
+}
+

@@ -1,0 +1,22 @@
+﻿[
+  {
+    "inscricao_enem": "250000000001",
+    "nome": "CANDIDATO EXEMPLO UM",
+    "nota": "650.10",
+    "ordem": 1,
+    "turno": "MATUTINO",
+    "modalidade": "AMPLA",
+    "modalidade_texto": "Ampla concorrência",
+    "chamada": "1a Chamada - 1o semestre 2026"
+  },
+  {
+    "inscricao_enem": "250000000002",
+    "nome": "CANDIDATO EXEMPLO DOIS",
+    "nota": "612.40",
+    "ordem": 1,
+    "turno": "NOTURNO",
+    "modalidade": "REDE_PUBLICA",
+    "modalidade_texto": "Candidatos que tenham cursado na rede pública todo o ensino médio e com comprovação de carência socioeconômica",
+    "chamada": "1a Chamada - 1o semestre 2026"
+  }
+]

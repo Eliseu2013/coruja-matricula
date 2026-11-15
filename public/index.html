@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAETERJ-Rio Coruja | Portal de Matrícula</title>
+  <meta name="description" content="Sistema de Gestão de Fichas de Matrícula da FAETERJ-Rio com auditoria minuciosa de cadastros e emissão de relatórios de inconsistências críticas para a comissão de matrícula." />
+  <meta property="og:title" content="FAETERJ-Rio Coruja | Portal de Matrícula" />
+  <meta property="og:description" content="Sistema de Gestão de Fichas de Matrícula da FAETERJ-Rio com auditoria minuciosa de cadastros e emissão de relatórios de inconsistências críticas para a comissão de matrícula." />
+  <meta property="og:type" content="website" />
+
+  <script>
+    (function() {
+      try {
+        const originalFetch = (typeof window !== 'undefined' && window.fetch) ? window.fetch.bind(window) : null;
+        let activeFetch = originalFetch;
+        if (typeof window !== 'undefined') {
+          Object.defineProperty(window, 'fetch', {
+            get: function() {
+              return activeFetch || originalFetch;
+            },
+            set: function(fn) {
+              if (typeof fn === 'function') {
+                activeFetch = fn;
+              }
+            },
+            configurable: true,
+            enumerable: true
+          });
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <script src="apiClient.js"></script>
+  <script src="app.js"></script>
+
+  <link rel="stylesheet" href="confirmacao.css">
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Google Fonts: Material Symbols & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+  <!-- V8: Tailwind compilado localmente (npm run build:css). Fica por último no <head>,
+       na mesma posição em que o CDN antigo injetava o CSS, para a cascata não mudar. -->
+  <link rel="stylesheet" href="tailwind.css">
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col justify-between selection:bg-primary-container selection:text-on-primary">
+
+  <!-- ========================================================================= -->
+  <!-- BARRA DE NAVEGAÇÃO PRINCIPAL (STITCH MODEL)                                -->
+  <!-- ========================================================================= -->
+  <header class="no-print fixed top-0 w-full z-50 bg-surface-container-low/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-surface-container-high/60">
+    <div class="h-16 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 flex items-center justify-between">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="navegarPara('portal')">
+        <img src="assets/logo-faeterj-rio.svg" alt="Logo FAETERJ" class="w-9 h-9 object-contain rounded-lg">
+        <div class="flex flex-col">
+          <span class="text-base font-bold text-primary tracking-tight leading-tight">FAETERJ-RIO</span>
+          <span class="text-xs text-on-surface-variant font-medium leading-none">Matrícula Online Oficial</span>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-3">
+        <button type="button" onclick="abrirModalAjuda()" class="hidden sm:inline-flex items-center px-3 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface text-xs font-semibold transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-[18px] mr-1">help</span>Ajuda
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- TOAST NOTIFICATIONS CONTAINER                                             -->
+  <!-- ========================================================================= -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 space-y-3 pointer-events-none"></div>
+
+  <!-- ========================================================================= -->
+  <!-- CONTEÚDO PRINCIPAL (TELAS DO MODELO ENVIADO)                               -->
+  <!-- ========================================================================= -->
+  <main class="w-full pt-16 flex-1 flex flex-col">
+
+    <!-- --------------------------------------------------------------------- -->
+    <!-- TELA 0: PORTAL DE MATRÍCULA (TELA INICIAL)                             -->
+    <!-- --------------------------------------------------------------------- -->
+    <section id="tela-portal" class="w-full flex-1 flex flex-col justify-center items-center py-10 lg:py-14 px-4 sm:px-6 lg:px-8">
+      <div class="relative w-full max-w-4xl flex flex-col items-center">
+        <!-- Glows -->
+        <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-primary-fixed/40 via-surface-container/30 to-transparent blur-3xl pointer-events-none rounded-full"></div>
+        <div class="absolute top-1/2 -right-40 w-80 h-80 bg-secondary-fixed/20 blur-3xl pointer-events-none rounded-full"></div>
+
+        <!-- Card Central -->
+        <div class="relative w-full max-w-2xl bg-surface-container-lowest rounded-3xl shadow-[0_20px_50px_rgba(11,28,48,0.06)] p-8 sm:p-12 lg:p-14 flex flex-col items-center text-center transition-all duration-300">
+          <div class="flex items-center justify-center gap-3 mb-6">
+            <img src="assets/logo-faeterj-rio.svg" alt="Logo FAETERJ-Rio" class="w-12 h-12 object-contain rounded-xl">
+            <div class="flex flex-col items-start text-left">
+              <span class="text-xl font-bold text-primary tracking-tight">FAETERJ-RIO</span>
+              <span class="text-xs text-on-surface-variant font-medium">Processo Seletivo &bull; Ingresso</span>
+            </div>
+          </div>
+
+          <h1 class="text-3xl sm:text-4xl font-bold text-on-background tracking-tight mb-3">
+            Portal de Matrícula
+          </h1>
+          <p class="text-sm text-on-surface-variant max-w-lg mb-8 leading-relaxed">
+            Seja bem-vindo à rede estadual de ensino superior. Selecione o serviço correspondente à sua etapa de ingresso.
+          </p>
+
+          <!-- Ações Principais -->
+          <div class="w-full flex flex-col gap-3.5 max-w-md mx-auto mb-8">
+            <!-- Botão 1: Realizar Matrícula -->
+            <button type="button" onclick="navegarPara('identificacao')" class="group relative w-full flex items-center justify-between px-6 py-4.5 rounded-2xl bg-surface-container-low hover:bg-surface-container hover:shadow-md transition-all duration-200 text-left cursor-pointer border border-transparent hover:border-primary-fixed">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl bg-surface-container-lowest flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors shadow-sm">
+                  <span class="material-symbols-outlined text-[22px]">assignment_add</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-base text-on-surface group-hover:text-primary font-semibold leading-tight">
+                    Realizar Matrícula
+                  </span>
+                  <span class="text-xs text-on-surface-variant mt-0.5">
+                    Para candidatos convocados em 1ª chamada
+                  </span>
+                </div>
+              </div>
+              <span class="material-symbols-outlined text-outline text-[22px] group-hover:translate-x-1 group-hover:text-primary transition-all">
+                arrow_forward
+              </span>
+            </button>
+
+            <!-- Botão 2: Verificar Matrícula -->
+            <button type="button" onclick="abrirModalConsulta()" class="group relative w-full flex items-center justify-between px-6 py-4.5 rounded-2xl bg-surface-container-low hover:bg-surface-container hover:shadow-md transition-all duration-200 text-left cursor-pointer border border-transparent hover:border-secondary-fixed">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl bg-surface-container-lowest flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-on-secondary transition-colors shadow-sm">
+                  <span class="material-symbols-outlined text-[22px]">query_stats</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-base text-on-surface group-hover:text-secondary font-semibold leading-tight">
+                    Verificar Matrícula
+                  </span>
+                  <span class="text-xs text-on-surface-variant mt-0.5">
+                    Consulte protocolo, pendências e resultado
+                  </span>
+                </div>
+              </div>
+              <span class="material-symbols-outlined text-outline text-[22px] group-hover:translate-x-1 group-hover:text-secondary transition-all">
+                arrow_forward
+              </span>
+            </button>
+          </div>
+
+          <!-- Informações ao Candidato -->
+          <div class="w-full bg-surface-container-low/70 rounded-2xl p-5 text-left flex items-start gap-3.5 border border-surface-container-high/40">
+            <div class="p-2 rounded-xl bg-surface-container-highest text-primary shrink-0 mt-0.5">
+              <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">info</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <p class="text-xs font-semibold text-on-surface">
+                Boas-vindas ao candidato convocado!
+              </p>
+              <p class="text-xs text-on-surface-variant leading-relaxed">
+                Tenha em mãos seus documentos originais ou cópias digitalizadas legíveis (foto pela câmera ou arquivo PDF, JPG ou PNG de até 8MB cada). O envio correto previne indeferimentos e agiliza sua homologação.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 Cards Inferiores: Checklist Prévio & Autenticidade -->
+        <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 max-w-2xl">
+          <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-surface-container-high/40 flex flex-col justify-between">
+            <div class="flex items-center gap-3 mb-2.5">
+              <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined text-[18px]">description</span>
+              </div>
+              <h3 class="text-xs font-bold text-on-surface">Checklist Prévio</h3>
+            </div>
+            <p class="text-xs text-on-surface-variant mb-3 leading-relaxed">
+              Identidade oficial com foto, CPF, Certidão de Nascimento/Casamento e Histórico Escolar do Ensino Médio.
+            </p>
+            <button type="button" onclick="abrirModalAjuda()" class="inline-flex items-center gap-1 text-xs text-primary font-semibold hover:underline self-start">
+              Lista completa de documentos
+              <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            </button>
+          </div>
+
+          <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-surface-container-high/40 flex flex-col justify-between">
+            <div class="flex items-center gap-3 mb-2.5">
+              <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+                <span class="material-symbols-outlined text-[18px]">verified_user</span>
+              </div>
+              <h3 class="text-xs font-bold text-on-surface">Autenticidade & Fé Pública</h3>
+            </div>
+            <p class="text-xs text-on-surface-variant mb-3 leading-relaxed">
+              Todos os documentos recebidos passam por conferência física no balcão e auditoria digital em 6 eixos.
+            </p>
+            <button type="button" onclick="abrirModalLgpd()" class="inline-flex items-center gap-1 text-xs text-secondary font-semibold hover:underline self-start">
+              Termos de Privacidade LGPD
+              <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------------------- -->
+    <!-- TELA 1: IDENTIFICAÇÃO DO CANDIDATO (CPF)                              -->
+    <!-- --------------------------------------------------------------------- -->
+    <section id="tela-identificacao" class="hidden w-full flex-1 flex flex-col justify-center items-center py-6 px-4 sm:px-6">
+      <div class="flex flex-col w-full">
+        <div class="w-full relative overflow-hidden py-6 md:py-10 px-4 sm:px-6 lg:px-8">
+          <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[760px] h-[340px] bg-gradient-to-b from-primary-fixed/40 via-surface-container/30 to-transparent blur-3xl pointer-events-none rounded-full"></div>
+          <div class="absolute top-1/3 -right-24 w-80 h-80 bg-secondary-fixed/20 blur-2xl pointer-events-none rounded-full"></div>
+          
+          <div class="max-w-4xl mx-auto flex flex-col items-center relative z-10">
+            <div class="w-full max-w-2xl bg-surface-container-lowest rounded-xl shadow-xl shadow-primary/5 p-6 sm:p-10 transition-all duration-300">
+              <div class="flex flex-col items-center text-center">
+                <h1 class="font-headline-xl text-headline-xl text-on-surface font-bold tracking-tight">
+                  Identificação do Candidato
+                </h1>
+                <p class="font-body-md text-body-md text-on-surface-variant max-w-lg mt-2 leading-relaxed">
+                  Informe o CPF cadastrado no processo seletivo para verificar sua convocação, conferir a lista de chamada ou continuar o processo de matrícula.
+                </p>
+              </div>
+
+              <!-- Formulário -->
+              <form class="mt-8 space-y-6" id="form-consulta-cpf" onsubmit="event.preventDefault(); validarCpf();">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <label class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-1.5" for="cpf-input">
+                      <span>CPF do Candidato</span>
+                      <span class="text-error font-bold">*</span>
+                    </label>
+                    <span class="hidden items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-primary font-medium" id="badge-validacao">
+                      <span class="material-symbols-outlined text-[14px]">check_circle</span> Formato correto
+                    </span>
+                  </div>
+                  
+                  <div class="relative flex items-center">
+                    <div class="absolute left-4 flex items-center pointer-events-none text-on-surface-variant">
+                      <span class="material-symbols-outlined text-[22px]">badge</span>
+                    </div>
+                    <input aria-describedby="cpf-help" autocomplete="off" class="w-full h-14 pl-12 pr-12 rounded-xl bg-surface-container-low text-on-surface font-title-lg text-title-lg tracking-wider placeholder:text-outline/70 focus:bg-surface-container-lowest focus:outline-none transition-all shadow-inner" id="cpf-input" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required="" type="text" value="">
+                    <button aria-label="Limpar campo de CPF" class="absolute right-4 text-on-surface-variant hover:text-error transition-colors p-1 hidden" id="btn-limpar" onclick="limparCampo()" type="button">
+                      <span class="material-symbols-outlined text-[20px]">cancel</span>
+                    </button>
+                  </div>
+
+                  <div class="flex items-center justify-between mt-2 px-1">
+                    <p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1" id="cpf-help">
+                      <span class="material-symbols-outlined text-[15px]">info</span>
+                      Somente números. O CPF deve pertencer ao candidato titular.
+                    </p>
+                    <span class="font-label-sm text-label-sm text-outline" id="char-counter">0/11</span>
+                  </div>
+
+                  <div class="hidden mt-2 p-3 rounded-lg bg-error-container text-on-error-container font-label-sm text-label-sm flex items-center gap-2" id="erro-msg">
+                    <span class="material-symbols-outlined text-[18px]">error</span>
+                    <span>Por favor, insira os 11 dígitos do CPF para prosseguir com a validação.</span>
+                  </div>
+                </div>
+
+                <!-- Número de Inscrição (V2): aparece só quando a secretaria carrega a lista de convocados -->
+                <div class="hidden" id="inscricao-bloco">
+                  <div class="flex items-center justify-between mb-2">
+                    <label class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-1.5" for="inscricao-input">
+                      <span>Inscrição do ENEM</span>
+                      <span class="text-error font-bold">*</span>
+                    </label>
+                  </div>
+                  <div class="relative flex items-center">
+                    <div class="absolute left-4 flex items-center pointer-events-none text-on-surface-variant">
+                      <span class="material-symbols-outlined text-[22px]">confirmation_number</span>
+                    </div>
+                    <input aria-describedby="inscricao-help" autocomplete="off" class="w-full h-14 pl-12 pr-4 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md placeholder:text-outline/70 focus:bg-surface-container-lowest focus:outline-none transition-all shadow-inner" id="inscricao-input" inputmode="numeric" maxlength="12" placeholder="12 dígitos, como na lista de convocados" type="text">
+                  </div>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-2 px-1" id="inscricao-help">
+                    <span class="material-symbols-outlined text-[15px]">info</span>
+                    Obrigatório no primeiro acesso.
+                  </p>
+                </div>
+
+                <!-- Criar e Confirmar Senha -->
+                <div class="space-y-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <div class="flex items-center justify-between mb-2">
+                        <label class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-1.5" for="senha-input">
+                          <span>Criar Senha de Acesso</span>
+                          <span class="text-error font-bold">*</span>
+                        </label>
+                      </div>
+                      <div class="relative flex items-center">
+                        <div class="absolute left-4 flex items-center pointer-events-none text-on-surface-variant">
+                          <span class="material-symbols-outlined text-[22px]">lock</span>
+                        </div>
+                        <input aria-label="Criar Senha de Acesso" autocomplete="new-password" class="w-full h-14 pl-12 pr-12 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md placeholder:text-outline/70 focus:bg-surface-container-lowest focus:outline-none transition-all shadow-inner" id="senha-input" minlength="6" placeholder="Digite sua senha (mínimo 6 caracteres)" type="password">
+                        <button aria-label="Alternar visibilidade da senha" class="absolute right-4 text-on-surface-variant hover:text-on-surface transition-colors p-1" onclick="const s = document.getElementById('senha-input'); const ic = this.querySelector('.material-symbols-outlined'); if(s.type === 'password'){ s.type = 'text'; ic.textContent = 'visibility_off'; } else { s.type = 'password'; ic.textContent = 'visibility'; }" type="button">
+                          <span class="material-symbols-outlined text-[20px]">visibility</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div class="flex items-center justify-between mb-2">
+                        <label class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-1.5" for="confirma-senha-input">
+                          <span>Confirmar Senha</span>
+                          <span class="text-error font-bold">*</span>
+                        </label>
+                      </div>
+                      <div class="relative flex items-center">
+                        <div class="absolute left-4 flex items-center pointer-events-none text-on-surface-variant">
+                          <span class="material-symbols-outlined text-[22px]">lock_reset</span>
+                        </div>
+                        <input aria-label="Confirmar Senha" autocomplete="new-password" class="w-full h-14 pl-12 pr-12 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md placeholder:text-outline/70 focus:bg-surface-container-lowest focus:outline-none transition-all shadow-inner" id="confirma-senha-input" minlength="6" placeholder="Confirme sua senha" type="password">
+                        <button aria-label="Alternar visibilidade da confirmação de senha" class="absolute right-4 text-on-surface-variant hover:text-on-surface transition-colors p-1" onclick="const cs = document.getElementById('confirma-senha-input'); const ic = this.querySelector('.material-symbols-outlined'); if(cs.type === 'password'){ cs.type = 'text'; ic.textContent = 'visibility_off'; } else { cs.type = 'password'; ic.textContent = 'visibility'; }" type="button">
+                          <span class="material-symbols-outlined text-[20px]">visibility</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-between px-1 pt-1">
+                    <p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[15px]">key</span>Mínimo de 6 caracteres alfanuméricos.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                  <button type="button" onclick="navegarPara('portal')" class="w-full sm:w-auto h-13 py-3.5 px-6 rounded-xl bg-surface-container-high hover:bg-surface-container text-on-surface font-label-md text-label-md font-medium transition-colors flex items-center justify-center gap-2 group cursor-pointer" data-path="inicio">
+                    <span class="material-symbols-outlined text-[20px] transition-transform group-hover:-translate-x-1">arrow_back</span>
+                    <span>Voltar</span>
+                  </button>
+                  <button class="w-full sm:flex-1 h-13 py-3.5 px-6 rounded-xl bg-primary hover:bg-secondary text-on-primary font-label-md text-label-md font-semibold transition-all shadow-md shadow-primary/25 hover:shadow-lg flex items-center justify-center gap-2 group active:scale-[0.99] cursor-pointer" id="btn-continuar" type="submit">
+                    <span>Continuar Matrícula</span>
+                    <span class="material-symbols-outlined text-[20px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+                  </button>
+                </div>
+              </form>
+
+              <div class="mt-8 p-4 sm:p-5 rounded-xl bg-surface-container-low flex items-start gap-3.5">
+                <div class="p-2 rounded-lg bg-surface-container-highest text-primary shrink-0">
+                  <span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">priority_high</span>
+                </div>
+                <div class="text-left flex-1 min-w-0">
+                  <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 leading-snug">
+                    Candidatos convocados devem ter em mãos os arquivos digitalizados legíveis (PDF, JPEG ou PNG até 10MB) de cada documento obrigatório antes de prosseguir com a inscrição.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rodapé do Card Principal -->
+            <div class="mt-8 flex flex-col sm:flex-row items-center justify-between w-full max-w-4xl px-2 gap-3 text-center sm:text-left">
+              <div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+                <span class="material-symbols-outlined text-[16px] text-primary">policy</span>
+                <span>Conformidade com a LGPD (Lei Nº 13.709/2018)</span>
+              </div>
+              <div class="font-body-sm text-body-sm text-outline">
+                FAETEC / SECTI — Governo do Estado do Rio de Janeiro
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal de Feedback/Consulta -->
+        <div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden items-center justify-center p-4" id="modal-feedback">
+          <div class="bg-surface-container-lowest max-w-md w-full rounded-xl p-6 shadow-2xl flex flex-col items-center text-center">
+            <div class="w-14 h-14 rounded-full bg-surface-container-high text-primary flex items-center justify-center mb-4" id="modal-icon-wrap">
+              <span class="material-symbols-outlined text-[32px]" id="modal-icon">sync</span>
+            </div>
+            <h3 class="font-title-lg text-title-lg font-bold text-on-surface mb-2" id="modal-title">Consultando Sistema</h3>
+            <p class="font-body-md text-body-md text-on-surface-variant mb-6 leading-relaxed" id="modal-desc">
+              Verificando dados junto à base de convocados da FAETERJ-Rio...
+            </p>
+            <div class="w-full flex gap-3" id="modal-actions">
+              <button type="button" class="w-full py-2.5 px-4 rounded-lg bg-surface-container-high text-on-surface font-label-md text-label-md font-medium hover:bg-surface-container transition-colors" onclick="fecharModal()">
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------------------- -->
+    <!-- TELA 2: ETAPA 1 - MODALIDADE E CONCORRÊNCIA                            -->
+    <!-- --------------------------------------------------------------------- -->
+    <section id="tela-etapa1" class="hidden w-full flex-1 flex flex-col justify-center items-center py-6 px-4 sm:px-6">
+      <div class="flex flex-col w-full">
+        <!-- Brilho decorativo de fundo -->
+        <div class="relative w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+          <div class="absolute top-12 left-1/2 -translate-x-1/2 w-3/4 h-72 bg-gradient-to-tr from-primary-fixed/20 via-secondary-container/15 to-transparent blur-3xl pointer-events-none rounded-full"></div>
+
+          <!-- Stepper -->
+          <div class="relative z-10 w-full mb-8 sm:mb-12">
+            <div class="bg-surface-container-lowest/90 backdrop-blur-md rounded-xl p-4 sm:p-6 shadow-sm border border-surface-container-high/40">
+              <div class="flex items-center justify-between relative">
+                <!-- Linha de fundo -->
+                <div class="absolute left-6 right-6 top-5 h-1 bg-surface-container -z-0"></div>
+                <!-- Linha de progresso -->
+                <div class="absolute left-6 top-5 h-1 bg-primary w-1/12 -z-0 transition-all duration-500" id="progress-bar-fill"></div>
+
+                <!-- Etapa 1 (ativa) -->
+                <div class="flex flex-col items-center relative z-10 text-center flex-1">
+                  <div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md shadow-primary/25 ring-4 ring-primary-fixed transition-transform duration-300" id="step-1-indicator">
+                    <span class="font-label-md text-label-md font-bold">1</span>
+                  </div>
+                  <span class="font-label-md text-label-md text-primary font-bold mt-2 hidden sm:block">Modalidade &amp; Identificação</span>
+                  <span class="font-label-sm text-label-sm text-primary font-bold mt-1 sm:hidden">Identificação</span>
+                  <span class="font-body-sm text-body-sm text-on-surface-variant hidden md:block">Etapa Atual</span>
+                </div>
+
+                <!-- Etapa 2 -->
+                <div class="flex flex-col items-center relative z-10 text-center flex-1 opacity-70" id="step-2-col">
+                  <div class="w-10 h-10 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center transition-all duration-300" id="step-2-indicator">
+                    <span class="font-label-md text-label-md">2</span>
+                  </div>
+                  <span class="font-label-md text-label-md text-on-surface-variant font-medium mt-2 hidden sm:block">Upload &amp; Conferência</span>
+                  <span class="font-label-sm text-label-sm text-on-surface-variant font-medium mt-1 sm:hidden">Documentos</span>
+                  <span class="font-body-sm text-body-sm text-on-surface-variant hidden md:block" id="step-2-status">Pendente</span>
+                </div>
+
+                <!-- Etapa 3 -->
+                <div class="flex flex-col items-center relative z-10 text-center flex-1 opacity-70">
+                  <div class="w-10 h-10 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center">
+                    <span class="font-label-md text-label-md">3</span>
+                  </div>
+                  <span class="font-label-md text-label-md text-on-surface-variant font-medium mt-2 hidden sm:block">Ficha Cadastral &amp; Dados</span>
+                  <span class="font-label-sm text-label-sm text-on-surface-variant font-medium mt-1 sm:hidden">Ficha</span>
+                  <span class="font-body-sm text-body-sm text-on-surface-variant hidden md:block">Pendente</span>
+                </div>
+
+                <!-- Etapa 4 -->
+                <div class="flex flex-col items-center relative z-10 text-center flex-1 opacity-70">
+                  <div class="w-10 h-10 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center">
+                    <span class="font-label-md text-label-md">4</span>
+                  </div>
+                  <span class="font-label-md text-label-md text-on-surface-variant font-medium mt-2 hidden sm:block">Confirmação &amp; Protocolo</span>
+                  <span class="font-label-sm text-label-sm text-on-surface-variant font-medium mt-1 sm:hidden">Protocolo</span>
+                  <span class="font-body-sm text-body-sm text-on-surface-variant hidden md:block">Pendente</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cartão principal -->
+          <div class="relative z-10 bg-surface-container-lowest rounded-xl shadow-md p-6 sm:p-10 border border-surface-container-high/40">
+
+            <!-- Alerta de validação -->
+            <div class="hidden mb-6 p-4 rounded-xl bg-error-container text-on-error-container flex items-center gap-3 border border-error/20 transition-all animate-shake" id="validation-error-alert">
+              <span class="material-symbols-outlined text-error text-[24px] flex-shrink-0">error</span>
+              <span class="font-label-md text-label-md font-semibold" id="validation-error-text">Selecione o turno e a modalidade de concorrência para continuar.</span>
+            </div>
+
+            <form class="flex flex-col gap-10" id="step-one-form" onsubmit="event.preventDefault(); handleStepOneSubmit();">
+
+              <!-- Seção 1: Turno -->
+              <div class="flex flex-col gap-6" id="section-turno">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary font-bold">
+                    <span class="material-symbols-outlined text-[20px]">badge</span>
+                  </div>
+                  <div>
+                    <h2 class="font-title-lg text-title-lg text-on-surface font-bold">1. Dados Básicos e Turno Letivo</h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">Verifique suas credenciais de aprovado(a) e assinale o turno selecionado no concurso.</p>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 bg-surface-container-low/30 p-6 rounded-xl border border-surface-container-high/40 transition-colors" id="turno-box">
+                  <div class="md:col-span-12 flex flex-col gap-3 pt-2">
+                    <span class="font-label-md text-label-md text-on-surface font-medium">
+                      Turno Pretendido da Matrícula <span class="text-error">*</span>
+                    </span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                      <!-- Turno Manhã -->
+                      <label class="cursor-pointer relative flex items-center gap-4 p-4 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low transition-all shadow-sm ring-2 ring-transparent" id="label-shift-manha" onclick="selectShift('manha')">
+                        <input class="sr-only" name="shift" type="radio" value="manha">
+                        <div class="w-6 h-6 rounded-full flex items-center justify-center text-on-primary transition-colors flex-shrink-0 bg-surface-container" id="radio-indicator-manha">
+                          <span class="w-2.5 h-2.5 rounded-full bg-surface-container-lowest opacity-0"></span>
+                        </div>
+                        <div class="flex flex-col">
+                          <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-secondary text-[20px]">light_mode</span>
+                            <span class="font-title-md text-title-md text-on-surface font-semibold">Turno Manhã</span>
+                          </div>
+                          <span class="font-body-md text-body-md text-on-surface-variant mt-0.5">Horário letivo regular: 07h00 às 12h20</span>
+                        </div>
+                      </label>
+
+                      <!-- Turno Noite -->
+                      <label class="cursor-pointer relative flex items-center gap-4 p-4 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low transition-all shadow-sm ring-2 ring-primary" id="label-shift-noite" onclick="selectShift('noite')">
+                        <input checked="" class="sr-only" name="shift" type="radio" value="noite">
+                        <div class="w-6 h-6 rounded-full flex items-center justify-center text-on-primary transition-colors flex-shrink-0 bg-primary" id="radio-indicator-noite">
+                          <span class="w-2.5 h-2.5 rounded-full bg-surface-container-lowest"></span>
+                        </div>
+                        <div class="flex flex-col">
+                          <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary-container text-[20px]">dark_mode</span>
+                            <span class="font-title-md text-title-md text-on-surface font-semibold">Turno Noite</span>
+                          </div>
+                          <span class="font-body-md text-body-md text-on-surface-variant mt-0.5">Horário letivo regular: 18h00 às 22h20</span>
+                        </div>
+                      </label>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Seção 2: Modalidade / Cota -->
+              <div class="flex flex-col gap-6" id="section-cota">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary font-bold">
+                      <span class="material-symbols-outlined text-[20px]">how_to_reg</span>
+                    </div>
+                    <div>
+                      <h2 class="font-title-lg text-title-lg text-on-surface font-bold">2. Qual é o seu tipo de vaga / concorrência? <span class="text-error">*</span></h2>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant">Conforme resultado oficial homologado pela comissão de seleção.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="quota-options-grid">
+
+                  <!-- A: Ampla Concorrência -->
+                  <label class="cursor-pointer relative p-5 rounded-xl ring-2 transition-all flex flex-col justify-between quota-card shadow-sm bg-primary/5 ring-primary" id="card-ampla" onclick="selectQuota('ampla', false)">
+                    <input checked="" class="sr-only" name="vaga_modalidade" type="radio" value="ampla">
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-surface-container-highest text-primary flex items-center justify-center flex-shrink-0">
+                          <span class="material-symbols-outlined text-[24px]">public</span>
+                        </div>
+                        <div>
+                          <span class="font-title-md text-title-md text-on-surface block font-semibold">Ampla Concorrência</span>
+                        </div>
+                      </div>
+                      <div class="w-6 h-6 rounded-full flex items-center justify-center text-on-primary flex-shrink-0 transition-colors bg-primary" id="check-icon-ampla">
+                        <span class="material-symbols-outlined text-[16px]">done</span>
+                      </div>
+                    </div>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant mt-4">
+                      Destinado a candidatos que concorreram pelo critério geral de classificação, sem reserva de vagas. Requer apenas documentação pessoal e acadêmica comum.
+                    </p>
+                  </label>
+
+                  <!-- B: Cota Negro / Pardo -->
+                  <label class="cursor-pointer relative p-5 rounded-xl ring-2 transition-all flex flex-col justify-between quota-card shadow-sm bg-surface-container-low hover:bg-surface-container ring-transparent" id="card-negro" onclick="selectQuota('negro', true)">
+                    <input class="sr-only" name="vaga_modalidade" type="radio" value="negro">
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-surface-container-highest text-primary flex items-center justify-center flex-shrink-0">
+                          <span class="material-symbols-outlined text-[24px]">diversity_3</span>
+                        </div>
+                        <div>
+                          <span class="font-title-md text-title-md text-on-surface block font-semibold">Cota Negro / Pardo</span>
+                          <span class="font-label-sm text-label-sm text-tertiary">Reserva Étnico-Racial</span>
+                        </div>
+                      </div>
+                      <div class="w-6 h-6 rounded-full flex items-center justify-center text-on-primary flex-shrink-0 transition-colors bg-surface-container-high" id="check-icon-negro">
+                        <span class="material-symbols-outlined text-[16px] opacity-0">done</span>
+                      </div>
+                    </div>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant mt-4">
+                      Exige procedimento de heteroidentificação e comprovação obrigatória de vulnerabilidade econômica via registro ativo no <strong>CadÚnico</strong>.
+                    </p>
+                  </label>
+
+                  <!-- C: Cota Rede Pública -->
+                  <label class="cursor-pointer relative p-5 rounded-xl bg-surface-container-low hover:bg-surface-container ring-2 ring-transparent transition-all flex flex-col justify-between quota-card shadow-sm" id="card-rede_publica" onclick="selectQuota('rede_publica', true)">
+                    <input class="sr-only" name="vaga_modalidade" type="radio" value="rede_publica">
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-surface-container-highest text-primary flex items-center justify-center flex-shrink-0">
+                          <span class="material-symbols-outlined text-[24px]">account_balance</span>
+                        </div>
+                        <div>
+                          <span class="font-title-md text-title-md text-on-surface block font-semibold">Cota Rede Pública</span>
+                          <span class="font-label-sm text-label-sm text-tertiary">Ensino Médio Integral na Rede Pública</span>
+                        </div>
+                      </div>
+                      <div class="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-on-primary flex-shrink-0 transition-colors" id="check-icon-rede_publica">
+                        <span class="material-symbols-outlined text-[16px] opacity-0">done</span>
+                      </div>
+                    </div>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant mt-4">
+                      Exige comprovação de conclusão integral do Ensino Médio em instituição governamental e inscrição ativa no <strong>CadÚnico</strong>.
+                    </p>
+                  </label>
+
+                  <!-- D: PCD / Filho de Militar Estadual -->
+                  <label class="cursor-pointer relative p-5 rounded-xl ring-2 transition-all flex flex-col justify-between quota-card shadow-sm bg-surface-container-low hover:bg-surface-container ring-transparent" id="card-pcd_militar" onclick="selectQuota('pcd_militar', true)">
+                    <input class="sr-only" name="vaga_modalidade" type="radio" value="pcd_militar">
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-surface-container-highest text-primary flex items-center justify-center flex-shrink-0">
+                          <span class="material-symbols-outlined text-[24px]">accessible_forward</span>
+                        </div>
+                        <div>
+                          <span class="font-title-md text-title-md text-on-surface block font-semibold">PCD / Filho de Militar Estadual</span>
+                          <span class="font-label-sm text-label-sm text-tertiary">Comprovação Específica + CadÚnico</span>
+                        </div>
+                      </div>
+                      <div class="w-6 h-6 rounded-full flex items-center justify-center text-on-primary flex-shrink-0 transition-colors bg-surface-container-high" id="check-icon-pcd_militar">
+                        <span class="material-symbols-outlined text-[16px] opacity-0">done</span>
+                      </div>
+                    </div>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant mt-4">
+                      Pessoa com deficiência (laudo médico pericial) ou filho de policial/bombeiro militar incapacitado/morto em serviço. Requer validação no <strong>CadÚnico</strong>.
+                    </p>
+                  </label>
+
+                </div>
+              </div>
+
+              <!-- Seção condicional: CadÚnico -->
+              <div class="hidden transition-all duration-500 ease-in-out" id="cadunico-container">
+                <div class="p-6 rounded-xl bg-surface-container-high/60 shadow-sm flex flex-col gap-6">
+                  <div class="flex items-start gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center flex-shrink-0">
+                      <span class="material-symbols-outlined text-[22px]">assignment_turned_in</span>
+                    </div>
+                    <div class="flex-1">
+                      <h3 class="font-title-lg text-title-lg text-primary font-bold">Verificação Obrigatória de Cota: Cadastro Único (CadÚnico)</h3>
+                      <p class="font-body-md text-body-md text-on-surface-variant mt-1">
+                        A legislação estadual fluminense exige comprovação de hipossuficiência socioeconômica para cotas estaduais da FAETEC.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="bg-surface-container-lowest p-5 rounded-lg flex flex-col gap-4">
+                    <div class="flex flex-wrap items-center gap-6">
+                      <span class="font-label-md text-label-md text-on-surface font-medium">Possui registro ativo no CadÚnico? <span class="text-error">*</span></span>
+                      <label class="cursor-pointer inline-flex items-center gap-2">
+                        <input type="radio" name="has_cadunico" value="sim" checked onchange="toggleNisField(true)" class="text-primary focus:ring-primary">
+                        <span class="font-body-md text-body-md text-on-surface font-medium">Sim, possuo NIS</span>
+                      </label>
+                      <label class="cursor-pointer inline-flex items-center gap-2">
+                        <input type="radio" name="has_cadunico" value="nao" onchange="toggleNisField(false)" class="text-primary focus:ring-primary">
+                        <span class="font-body-md text-body-md text-on-surface font-medium">Não possuo</span>
+                      </label>
+                    </div>
+
+                    <!-- Campo NIS -->
+                    <div class="mt-3 flex flex-col gap-2 max-w-md" id="nis-input-wrapper">
+                      <label class="font-label-md text-label-md text-on-surface font-medium" for="nis-number">
+                        Número de Identificação Social (NIS) <span class="text-error">*</span>
+                      </label>
+                      <div class="relative flex items-center">
+                        <span class="material-symbols-outlined absolute left-3.5 text-on-surface-variant text-[20px] pointer-events-none">tag</span>
+                        <input class="w-full h-12 pl-11 pr-4 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary shadow-sm" id="nis-number" maxlength="11" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 11)" name="nis_number" placeholder="Ex: 12345678901 (11 dígitos)" type="text">
+                      </div>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant">
+                        O NIS do próprio candidato ou do responsável familiar cadastrado. O comprovante (PDF) será solicitado no Passo 3.
+                      </p>
+                    </div>
+
+                    <!-- Aviso para quem não possui CadÚnico -->
+                    <div class="hidden mt-2 p-4 rounded-lg bg-error-container text-on-error-container flex items-start gap-3" id="cadunico-warning">
+                      <span class="material-symbols-outlined text-error text-[22px] flex-shrink-0">warning</span>
+                      <div class="flex flex-col">
+                        <span class="font-label-md text-label-md font-bold">Atenção ao Edital da FAETERJ-Rio:</span>
+                        <span class="font-body-sm text-body-sm mt-0.5">
+                          Candidatos de vagas reservadas que não apresentarem o comprovante do CadÚnico serão reclassificados para a lista de ampla concorrência ou terão sua matrícula indeferida, conforme regulamentação da Comissão Central de Matrícula.
+                        </span>
+                        <span class="font-body-sm text-body-sm mt-2">
+                          Em caso de dúvidas, envie um e-mail para a Secretaria Acadêmica:
+                          <a class="font-bold underline" href="mailto:sec_acad@exemplo.com?subject=D%C3%BAvida%20sobre%20Cad%C3%9Anico%20e%20cotas%20-%20FAETERJ-Rio">sec_acad@exemplo.com</a>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Barra de ações -->
+              <div class="flex flex-col-reverse sm:flex-row items-center justify-between gap-4 pt-6 border-t border-surface-container-high/40">
+                <button class="w-full sm:w-auto px-6 py-3.5 rounded-lg text-on-surface-variant hover:bg-surface-container font-label-md text-label-md transition-colors flex items-center justify-center gap-2 cursor-pointer" onclick="handleVoltarInicio()" type="button">
+                  <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                  Voltar
+                </button>
+                <button class="w-full sm:w-auto px-8 py-3.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md font-semibold shadow-md shadow-primary/20 hover:shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer" id="btn-submit" type="submit">
+                  <span id="btn-text">Continuar para Ficha Cadastral</span>
+                  <span class="material-symbols-outlined text-[20px]" id="btn-icon">arrow_forward</span>
+                  <span class="hidden animate-spin material-symbols-outlined text-[20px]" id="btn-spinner">progress_activity</span>
+                </button>
+              </div>
+
+            </form>
+          </div>
+
+          <!-- Rodapé de ajuda -->
+          <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-surface-container-low/50 border border-surface-container-high/40">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-secondary text-[24px]">contact_support</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">
+                Dúvidas sobre o enquadramento de cotas ou problemas com seu NIS? <a class="text-primary font-semibold hover:underline" href="mailto:sec_acad@exemplo.com?subject=Ajuda%20com%20a%20matr%C3%ADcula%20-%20FAETERJ-Rio">Contate a secretaria (sec_acad@exemplo.com)</a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------------------- -->
+    <!-- TELA 3: ETAPA 2 - FICHA CADASTRAL & DADOS DO CANDIDATO                 -->
+    <!-- --------------------------------------------------------------------- -->
+    <section id="tela-etapa2" class="hidden w-full flex-1 flex flex-col justify-center items-center py-6 px-4 sm:px-6">
+      <div class="flex flex-col w-full">
+        <div class="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-8">
+          <div class="w-full bg-surface-container-lowest p-6 sm:p-8 rounded-xl shadow-sm border border-outline-variant/30 space-y-6">
+            <div class="w-full py-4">
+              <div class="relative flex items-center justify-between w-full max-w-4xl mx-auto px-4">
+                <div class="absolute left-10 right-10 top-5 -translate-y-1/2 h-1 bg-surface-container-high z-0"></div>
+                <div class="absolute left-10 top-5 -translate-y-1/2 w-1/3 h-1 bg-primary z-0"></div>
+                <div class="relative z-10 flex flex-col items-center gap-2">
+                  <div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-label-md shadow-sm">
+                    <span class="material-symbols-outlined text-[20px]">check</span>
+                  </div>
+                  <div class="text-center">
+                    <p class="font-label-md text-label-md text-on-surface font-semibold">Modalidade &amp; Identificação</p>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">Concluído</p>
+                  </div>
+                </div>
+                <div class="relative z-10 flex flex-col items-center gap-2">
+                  <div class="w-10 h-10 rounded-full bg-primary text-on-primary ring-4 ring-primary-fixed flex items-center justify-center font-bold text-label-md shadow-md">2</div>
+                  <div class="text-center">
+                    <p class="font-label-md text-label-md text-primary font-bold">Dados &amp; Ficha Cadastral</p>
+                    <p class="font-body-sm text-body-sm text-primary font-semibold">Etapa Atual</p>
+                  </div>
+                </div>
+                <div class="relative z-10 flex flex-col items-center gap-2">
+                  <div class="w-10 h-10 rounded-full bg-surface-container-high text-outline flex items-center justify-center font-bold text-label-md">3</div>
+                  <div class="text-center">
+                    <p class="font-label-md text-label-md text-on-surface-variant font-medium hidden sm:block">Upload &amp; Conferência</p>
+                    <p class="font-label-md text-label-md text-on-surface-variant font-medium sm:hidden">Docs</p>
+                    <p class="font-body-sm text-body-sm text-outline">Pendente</p>
+                  </div>
+                </div>
+                <div class="relative z-10 flex flex-col items-center gap-2">
+                  <div class="w-10 h-10 rounded-full bg-surface-container-high text-outline flex items-center justify-center font-bold text-label-md">4</div>
+                  <div class="text-center">
+                    <p class="font-label-md text-label-md text-on-surface-variant font-medium hidden sm:block">Confirmação &amp; Protocolo</p>
+                    <p class="font-label-md text-label-md text-on-surface-variant font-medium sm:hidden">Final</p>
+                    <p class="font-body-sm text-body-sm text-outline">Pendente</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <form class="space-y-8" id="enrollmentForm" onsubmit="event.preventDefault(); validateAndProceed();">
+            <!-- Caixa de Alerta de Erros de Validação -->
+            <div id="backendValidationErrorBox" class="hidden p-5 rounded-xl bg-error-container border-2 border-error/50 text-on-error-container space-y-3 shadow-md animate-pulse-once">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg bg-error text-white flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-[24px]">gpp_maybe</span>
+                  </div>
+                  <div>
+                    <h3 class="font-title-md font-bold text-error">Quase lá! Faltam alguns ajustes</h3>
+                    <p class="font-body-sm text-on-error-container" id="backendValidationMsg">Um ou mais campos não atenderam aos critérios obrigatórios do cadastro.</p>
+                  </div>
+                </div>
+                <button type="button" onclick="document.getElementById('backendValidationErrorBox').classList.add('hidden')" class="text-error hover:opacity-80 p-1">
+                  <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+              </div>
+              <div class="p-3 bg-white/70 rounded-lg border border-error/20">
+                <p class="font-label-sm font-bold text-error mb-1.5 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px]">error</span>
+                  O que precisa ser ajustado (clique para ir ao campo):
+                </p>
+                <ul class="list-disc list-inside space-y-1 font-body-sm text-error font-medium" id="backendValidationErrorsList">
+                  <!-- Itens de erro injetados via script.js -->
+                </ul>
+              </div>
+            </div>
+
+            <section class="bg-surface-container-lowest p-6 sm:p-8 rounded-xl shadow-sm space-y-6 border border-surface-container-high/40">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[24px]">person</span>
+                  </div>
+                  <div>
+                    <h2 class="font-title-lg text-title-lg text-primary font-bold">1. Dados do Candidato</h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">Conforme registro oficial em certidões e documento de identidade</p>
+                  </div>
+                </div>
+                <span class="font-label-sm text-label-sm bg-surface-container text-primary font-semibold px-2.5 py-1 rounded">Campos Obrigatórios</span>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-5 pt-2">
+                <div class="md:col-span-8 flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="candidateName">Nome Completo do Candidato <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  <input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="candidateName" name="candidateName" oninput="maskLettersOnly(this)" placeholder="DIGITE O NOME COMPLETO DO CANDIDATO (APENAS LETRAS)" required="" type="text">
+                </div>
+                <div class="md:col-span-12 flex flex-col gap-1.5">
+                  <div class="flex items-center justify-between">
+                    <label class="font-label-md text-label-md text-on-surface font-semibold" for="socialName">Nome Social <span class="text-on-surface-variant font-normal text-xs">(Opcional - Decreto nº 8.727/2016)</span></label>
+                    <span class="font-body-sm text-xs text-outline italic">Opcional</span>
+                  </div>
+                  <input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="socialName" name="socialName" oninput="maskLettersOnly(this)" placeholder="EX: NOME SOCIAL (APENAS LETRAS, SEM NÚMEROS)" type="text">
+                </div>
+                <div class="md:col-span-4 flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="candidateCpf">CPF do Candidato <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  <input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="candidateCpf" maxlength="14" name="candidateCpf" oninput="maskCPF(this)" placeholder="000.000.000-00" required="" type="text">
+                </div>
+                <div class="md:col-span-4 flex flex-col gap-1.5"><label class="font-label-md text-label-md text-on-surface font-semibold" for="cpfIssueDate">Data de Emissão do CPF</label><div class="relative"><input class="w-full h-12 pl-4 pr-10 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="cpfIssueDate" maxlength="10" name="cpfIssueDate" oninput="maskDate(this)" placeholder="dd/mm/aaaa" type="text"><span class="material-symbols-outlined absolute right-3 top-3 text-outline text-[20px] pointer-events-none">calendar_today</span></div></div>
+                <div class="md:col-span-4 flex flex-col gap-1.5"><label class="font-label-md text-label-md text-on-surface font-semibold" for="cpfExpiryDate">Data de Validade do CPF</label><div class="relative"><input class="w-full h-12 pl-4 pr-10 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="cpfExpiryDate" maxlength="10" name="cpfExpiryDate" oninput="maskDate(this)" placeholder="dd/mm/aaaa" type="text"><span class="material-symbols-outlined absolute right-3 top-3 text-outline text-[20px] pointer-events-none">calendar_today</span></div></div>
+                
+                <div class="md:col-span-4 flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="rg">Documento de Identidade (RG) <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  <input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="rg" maxlength="14" name="rg" oninput="maskRgOrCpf(this)" placeholder="00.000.000-0 OU 000.000.000-00" required="" type="text">
+                </div>
+                <div class="md:col-span-2 flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="rgIssuer">Órgão Emissor <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  <input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="rgIssuer" maxlength="15" name="rgIssuer" oninput="maskLettersOnly(this)" placeholder="EX: DETRAN, IFP" required="" type="text">
+                </div>
+                <div class="md:col-span-2 flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="rgState">UF Emissor <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  <select class="h-12 px-3 rounded-lg bg-surface-container-low text-on-surface uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="rgState" name="rgState" required="">
+                    <option selected="" value="RJ">RJ</option>
+                    <option value="SP">SP</option>
+                    <option value="MG">MG</option>
+                    <option value="ES">ES</option>
+                    <option value="OUTRO">OUTRO</option>
+                  </select>
+                </div>
+                <div class="md:col-span-4 flex flex-col gap-1.5"><label class="font-label-md text-label-md text-on-surface font-semibold" for="rgExpiryDate">Data de Validade do RG</label><div class="relative"><input class="w-full h-12 pl-4 pr-10 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="rgExpiryDate" maxlength="10" name="rgExpiryDate" oninput="maskDate(this)" placeholder="dd/mm/aaaa" type="text"><span class="material-symbols-outlined absolute right-3 top-3 text-outline text-[20px] pointer-events-none">calendar_today</span></div></div>
+                <div class="md:col-span-4 flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="birthDate">Data de Nascimento <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  <div class="relative">
+                    <input class="w-full h-12 pl-4 pr-10 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="birthDate" maxlength="10" name="birthDate" oninput="maskDate(this)" placeholder="dd/mm/aaaa" required="" type="text">
+                    <span class="material-symbols-outlined absolute right-3 top-3 text-outline text-[20px] pointer-events-none">calendar_today</span>
+                  </div>
+                </div>
+                <div class="md:col-span-4 flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="maritalStatus">Estado Civil <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  <select class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="maritalStatus" name="maritalStatus" required="">
+                    <option value="SOLTEIRO(A)">SOLTEIRO(A)</option>
+                    <option value="CASADO(A)">CASADO(A)</option>
+                    <option value="UNIAO ESTAVEL">UNIÃO ESTÁVEL</option>
+                    <option value="DIVORCIADO(A)">DIVORCIADO(A)</option>
+                    <option value="VIUVO(A)">VIÚVO(A)</option>
+                  </select>
+                </div>
+                <div class="md:col-span-4 flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="gender">Gênero / Sexo Biológico <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  <select class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="gender" name="gender" onchange="toggleMilitaryField(this.value)" required="">
+                    <option value="MASCULINO">MASCULINO</option>
+                    <option value="FEMININO">FEMININO</option>
+                    <option value="OUTRO">OUTRO / NÃO INFORMAR</option>
+                  </select>
+                </div>
+                
+                <div class="md:col-span-4 flex flex-col gap-1.5"><label class="font-label-md text-label-md text-on-surface font-semibold" for="voterNumber">Título de Eleitor <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label><input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="voterNumber" maxlength="14" name="voterNumber" oninput="maskTituloEleitor(this)" placeholder="0000 0000 0000" required="" type="text"></div>
+                <div class="md:col-span-4 flex flex-col gap-1.5"><label class="font-label-md text-label-md text-on-surface font-semibold" for="voterZone">Zona Eleitoral <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label><input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="voterZone" maxlength="3" inputmode="numeric" pattern="\d{3}" name="voterZone" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 3)" placeholder="EX: 001" title="3 números" required="" type="text"></div>
+                <div class="md:col-span-4 flex flex-col gap-1.5"><label class="font-label-md text-label-md text-on-surface font-semibold" for="voterSection">Seção Eleitoral <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label><input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="voterSection" maxlength="4" inputmode="numeric" pattern="\d{4}" name="voterSection" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 4)" placeholder="EX: 0010" title="4 números" required="" type="text"></div>
+                
+                <div class="md:col-span-12 pt-3 border-t border-outline-variant/30"><div class="flex items-center justify-between mb-1"><h3 class="font-label-md text-label-md text-primary font-bold uppercase tracking-wider">Certidão de Nascimento ou Casamento</h3><span class="font-body-sm text-xs text-outline italic">Registro Civil</span></div><p class="font-body-sm text-body-sm text-on-surface-variant mb-2">Informe os dados de registro cartorário constantes na certidão civil de nascimento ou casamento</p></div>
+                <div class="md:col-span-6 flex flex-col gap-1.5"><label class="font-label-md text-label-md text-on-surface font-semibold" for="birthCertNumber">Número do Termo da Certidão <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label><input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="birthCertNumber" inputmode="numeric" name="birthCertNumber" oninput="maskCertidaoMatricula(this)" placeholder="EX: 12345 (SOMENTE NÚMEROS)" required="" type="text"></div>
+                <div class="md:col-span-3 flex flex-col gap-1.5"><label class="font-label-md text-label-md text-on-surface font-semibold" for="birthCertBook">Livro da Certidão <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label><input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="birthCertBook" maxlength="8" name="birthCertBook" oninput="maskLivroCertidao(this)" placeholder="EX: A-123" required="" type="text"></div>
+                <div class="md:col-span-3 flex flex-col gap-1.5"><label class="font-label-md text-label-md text-on-surface font-semibold" for="birthCertPage">Folha da Certidão <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label><input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="birthCertPage" maxlength="6" name="birthCertPage" oninput="maskFolhaCertidao(this)" placeholder="EX: 045" required="" type="text"></div>
+                
+                <div class="md:col-span-12 pt-2">
+                  <h3 class="font-label-md text-label-md text-primary font-bold uppercase tracking-wider mb-1">Endereço Residencial (Comprovante Oficial)</h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant mb-2">Digite o CEP e o endereço (rua, bairro e estado) será preenchido automaticamente. Se não preencher, escreva o nome da rua.</p>
+                </div>
+                <div class="md:col-span-3 flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="zipCode">CEP <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  <div class="relative">
+                    <input class="w-full h-12 pl-4 pr-10 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="zipCode" maxlength="9" name="zipCode" oninput="handleCepInput(this)" placeholder="20000-000" required="" type="text">
+                    <div class="absolute right-3 top-3 flex items-center justify-center pointer-events-none" id="cepStatusIcon">
+                      <span class="material-symbols-outlined text-outline text-[20px]">search</span>
+                    </div>
+                  </div>
+                  <span class="font-label-sm text-xs text-primary hidden" id="cepMessage">Buscando endereço...</span>
+                </div>
+                <div class="md:col-span-7 flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="street">Endereço (nome da rua) <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  <input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="street" name="street" oninput="maskNomeRua(this)" placeholder="EX: RUA SILVA JARDIM" required="" type="text">
+                </div>
+                <div class="md:col-span-2 flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="houseNumber">Número <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  <input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="houseNumber" maxlength="8" name="houseNumber" oninput="maskNumeroCasa(this)" placeholder="123 / S/N" required="" type="text">
+                </div>
+                <div class="md:col-span-4 flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="neighborhood">Bairro <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  <input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="neighborhood" name="neighborhood" oninput="this.value = this.value.toUpperCase()" placeholder="EX: CENTRO" required="" type="text">
+                </div>
+                <div class="md:col-span-3 flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="state">Estado (UF) <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  <input class="h-12 px-4 rounded-lg bg-surface-container text-on-surface-variant font-bold font-body-md text-body-md outline-none cursor-not-allowed uppercase" id="state" name="state" readonly="" type="text" value="RJ">
+                </div>
+              </div>
+            </section>
+            
+            <section class="bg-surface-container-lowest p-6 sm:p-8 rounded-xl border border-transparent shadow-sm space-y-6 transition-all" id="guardianCard">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[24px]">escalator_warning</span>
+                  </div>
+                  <div>
+                    <h2 class="font-title-lg text-title-lg text-primary font-bold">2. Dados dos Responsáveis Legais</h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">Conforme edital: obrigatório para menores de 18 anos</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 bg-surface-container-low p-2 rounded-xl">
+                  <span class="font-label-md text-label-md text-on-surface font-semibold">Candidato menor de idade?</span>
+                  <button aria-checked="false" class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full bg-surface-container-highest transition-colors duration-200 ease-in-out focus:outline-none" id="minorToggleBtn" onclick="toggleMinorFields()" role="switch" type="button">
+                    <span class="pointer-events-none inline-block h-5 w-5 transform translate-x-1 translate-y-1 rounded-full bg-surface shadow-sm ring-0 transition duration-200 ease-in-out" id="toggleCircle"></span>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="p-4 bg-surface-container-low rounded-lg flex items-start gap-3">
+                <span class="material-symbols-outlined text-secondary text-[20px] mt-0.5">info</span>
+                <div class="flex flex-col gap-1">
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">
+                    <strong class="text-on-surface font-semibold">Nota Normativa:</strong> Se menor de 18 anos, identidade e CPF <strong class="text-on-surface underline">INCLUSIVE da mãe ou pai</strong> que assinarão a Ficha de Matrícula junto à secretaria escolar presencial ou digitalmente.
+                  </p>
+                  <p class="font-label-sm text-label-sm text-outline italic" id="minorExemptNote">Dispensado para candidatos maiores de 18 anos</p>
+                </div>
+              </div>
+              
+              <div class="opacity-40 pointer-events-none transition-all duration-300" id="guardianSection">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+                  <div class="md:col-span-12 flex flex-col gap-1.5">
+                    <label class="font-label-md text-label-md text-on-surface font-semibold" for="guardianName">Nome Completo do Responsável Legal (Mãe/Pai/Tutor) <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                    <input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" disabled="" id="guardianName" name="guardianName" oninput="maskLettersOnly(this)" placeholder="NOME COMPLETO DO RESPONSÁVEL (APENAS LETRAS)" type="text">
+                  </div>
+                  <div class="md:col-span-4 flex flex-col gap-1.5">
+                    <label class="font-label-md text-label-md text-on-surface font-semibold" for="guardianCpf">CPF do Responsável <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                    <input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" disabled="" id="guardianCpf" maxlength="14" name="guardianCpf" oninput="maskCPF(this)" placeholder="000.000.000-00" type="text">
+                  </div>
+                  <div class="md:col-span-4 flex flex-col gap-1.5">
+                    <label class="font-label-md text-label-md text-on-surface font-semibold" for="guardianRg">RG do Responsável <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                    <input class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" disabled="" id="guardianRg" maxlength="14" name="guardianRg" oninput="maskRgOrCpf(this)" placeholder="00.000.000-0 OU 000.000.000-00" type="text">
+                  </div>
+                  <div class="md:col-span-4 flex flex-col gap-1.5">
+                    <label class="font-label-md text-label-md text-on-surface font-semibold" for="guardianKinship">Grau de Parentesco / Vínculo <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                    <select class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" disabled="" id="guardianKinship" name="guardianKinship">
+                      <option value="MAE">MÃE</option>
+                      <option value="PAI">PAI</option>
+                      <option value="TUTOR_LEGAL">TUTOR LEGAL / GUARDA DEFINITIVA</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </section>
+            
+            <section class="bg-surface-container-lowest p-6 sm:p-8 rounded-xl shadow-sm space-y-6 border border-surface-container-high/40">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[24px]">school</span>
+                </div>
+                <div>
+                  <h2 class="font-title-lg text-title-lg text-primary font-bold">3. Histórico e Conclusão do Ensino Médio</h2>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">Instituição formadora e dados de registro para validação de escolaridade</p>
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-5 pt-2">
+                <div class="md:col-span-12 flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="schoolType">Tipo de Instituição / Rede de Ensino <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  <select class="h-12 px-4 rounded-lg bg-surface-container-low text-on-surface uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="schoolType" name="schoolType" required="">
+                    <option disabled="" selected="" value="">SELECIONE A REDE DE ENSINO</option>
+                    <option value="PUBLICA">REDE PÚBLICA (ESTADUAL, FEDERAL OU MUNICIPAL)</option>
+                    <option value="PRIVADA">REDE PRIVADA / PARTICULAR</option>
+                    <option value="OUTRA">OUTRA / EXTERIOR</option>
+                  </select>
+                </div>
+                <div class="md:col-span-12 flex flex-col gap-1.5 relative">
+                  <div class="flex items-center justify-between">
+                    <label class="font-label-md text-label-md text-on-surface font-semibold" for="schoolName">Nome da Escola de Conclusão do Ensino Médio <span class="text-red-600 font-bold" style="color: rgb(220, 38, 38);">*</span></label>
+                  </div>
+                  
+                  <div class="relative w-full">
+                    <div class="relative flex items-center">
+                      <input class="w-full h-12 pl-4 pr-10 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline uppercase font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:shadow-md transition-all outline-none" id="schoolName" name="schoolName" oninput="handleSchoolNameInput(this)" placeholder="EX: COLÉGIO ESTADUAL PROFESSOR JOSÉ DA SILVA" required="" type="text" autocomplete="off">
+                    </div>
+                  </div>
+
+                  <p class="text-[11px] text-on-surface-variant flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px] text-primary">lightbulb</span>
+                    <span>Digite o <strong>nome completo</strong> da escola, igual ao que aparece no seu histórico escolar.</span>
+                  </p>
+                </div>
+              </div>
+            </section>
+            
+            <div class="flex flex-col-reverse sm:flex-row items-center justify-between gap-4 pt-4 pb-12 border-t border-surface-container-high/40">
+              <button type="button" class="w-full sm:w-auto px-8 py-3.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md text-center flex items-center justify-center gap-2 cursor-pointer" onclick="navigateBack(event)"><span class="material-symbols-outlined text-[18px]">arrow_back</span>Voltar para Modalidade &amp; Turno</button>
+              <div class="flex items-center gap-3 w-full sm:w-auto">
+                <button id="btnSubmitFichaCadastral" class="w-full sm:w-auto px-8 py-3.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary transition-all font-label-md text-label-md shadow-md hover:shadow-lg flex items-center justify-center gap-2 font-semibold cursor-pointer" type="submit">
+                  <span id="btnSubmitFichaText">Validar &amp; Avançar para Documentos</span>
+                  <span id="btnSubmitFichaIcon" class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                  <span id="btnSubmitFichaSpinner" class="material-symbols-outlined text-[18px] animate-spin hidden">progress_activity</span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/60 backdrop-blur-sm hidden" id="feedbackModal">
+        <div class="bg-surface-container-lowest max-w-lg w-full mx-4 rounded-2xl p-6 sm:p-8 shadow-2xl border border-surface-container-high text-center space-y-5 animate-scale-up">
+          <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto shadow-inner">
+            <span class="material-symbols-outlined text-[36px]">verified_user</span>
+          </div>
+          <div>
+            <h3 class="font-headline-md text-headline-md text-primary font-bold">Ficha Cadastral Salva com Sucesso!</h3>
+            <p class="font-body-md text-body-md text-on-surface-variant mt-1">Seus dados pessoais foram conferidos e estão corretos. Agora é só enviar seus documentos.</p>
+          </div>
+          
+          <div class="bg-surface-container-low p-4 rounded-xl text-left text-xs sm:text-sm space-y-2 border border-surface-container-high">
+            <div class="flex items-center justify-between text-emerald-800 font-semibold">
+              <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">check_circle</span> Nome completo</span>
+              <span class="bg-emerald-100 px-2 py-0.5 rounded text-[11px]">Conferido</span>
+            </div>
+            <div class="flex items-center justify-between text-emerald-800 font-semibold">
+              <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">check_circle</span> CPF e RG</span>
+              <span class="bg-emerald-100 px-2 py-0.5 rounded text-[11px]">Conferido</span>
+            </div>
+            <div class="flex items-center justify-between text-emerald-800 font-semibold">
+              <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">check_circle</span> Título de Eleitor e Certidão</span>
+              <span class="bg-emerald-100 px-2 py-0.5 rounded text-[11px]">Conferido</span>
+            </div>
+            <div class="flex items-center justify-between text-emerald-800 font-semibold">
+              <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">check_circle</span> Data de nascimento e endereço</span>
+              <span class="bg-emerald-100 px-2 py-0.5 rounded text-[11px]">Conferido</span>
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button class="w-full py-3.5 px-6 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-semibold font-label-md shadow-md transition-all cursor-pointer flex items-center justify-center gap-2" onclick="proceedToStep3()" type="button">
+              <span>Avançar para Etapa 3 (Upload &amp; Conferência)</span>
+              <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------------------- -->
+    <!-- TELA 4: ETAPA 3 - CHECKLIST DE DOCUMENTOS                              -->
+    <!-- --------------------------------------------------------------------- -->
+    <section id="tela-etapa3" class="hidden w-full flex-1 flex flex-col justify-center items-center py-6 px-4 sm:px-6">
+      <!-- Toast Notification -->
+      <div class="fixed bottom-6 right-6 z-[100] transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-xl text-white font-label-md text-label-md" id="toastNotification">
+        <span class="material-symbols-outlined text-xl" id="toastIcon">check_circle</span>
+        <span id="toastMessage">Operação realizada com sucesso.</span>
+      </div>
+
+      <!-- Controles Flutuantes de Rolagem -->
+      <div class="fixed bottom-6 right-6 z-40 flex flex-col gap-2" id="scrollFloatingControls">
+        <button class="w-10 h-10 rounded-full bg-surface-container-lowest text-primary shadow-lg border border-outline-variant hover:bg-surface-container-high transition-all flex items-center justify-center cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Rolar para o topo">
+          <span class="material-symbols-outlined text-xl">keyboard_arrow_up</span>
+        </button>
+        <button class="w-10 h-10 rounded-full bg-surface-container-lowest text-primary shadow-lg border border-outline-variant hover:bg-surface-container-high transition-all flex items-center justify-center cursor-pointer" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" title="Rolar para o final">
+          <span class="material-symbols-outlined text-xl">keyboard_arrow_down</span>
+        </button>
+      </div>
+
+      <div class="flex flex-col w-full">
+      <!-- Stepper Header Section -->
+      <div class="w-full bg-surface-container-low py-8 px-6 lg:px-12 shadow-sm">
+        <div class="max-w-5xl mx-auto flex flex-col gap-6">
+          <div class="rounded-2xl py-6 px-8 shadow-sm border border-outline-variant mt-4 pt-4">
+            <div class="relative flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
+              <div class="hidden md:block absolute top-5 left-12 right-12 h-0.5 bg-surface-container-high z-0"></div>
+              <div class="hidden md:block absolute top-5 left-12 w-2/3 h-0.5 bg-primary z-0 transition-all duration-500" id="stepperProgressBar"></div>
+             
+              <div class="relative z-10 flex flex-col md:items-center text-center group w-full md:w-auto">
+                <div class="flex items-center md:flex-col gap-3 md:gap-2">
+                  <div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
+                    <span class="material-symbols-outlined text-lg">check</span>
+                  </div>
+                  <div class="flex flex-col md:items-center text-left md:text-center">
+                    <span class="font-label-md text-label-md font-semibold text-on-surface">Modalidade &amp; Identificação</span>
+                    <span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Concluído</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="relative z-10 flex flex-col md:items-center text-center group w-full md:w-auto">
+                <div class="flex items-center md:flex-col gap-3 md:gap-2">
+                  <div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
+                    <span class="material-symbols-outlined text-lg">check</span>
+                  </div>
+                  <div class="flex flex-col md:items-center text-left md:text-center">
+                    <span class="font-label-md text-label-md font-semibold text-on-surface">Dados &amp; Ficha Cadastral</span>
+                    <span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Concluído</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="relative z-10 flex flex-col md:items-center text-center group w-full md:w-auto" id="step3Node">
+                <div class="flex items-center md:flex-col gap-3 md:gap-2">
+                  <div class="w-10 h-10 rounded-full bg-primary text-on-primary ring-4 ring-primary/20 flex items-center justify-center font-bold text-sm shadow-md shrink-0 transition-all" id="step3Badge">
+                    <span id="step3Number">3</span>
+                  </div>
+                  <div class="flex flex-col md:items-center text-left md:text-center">
+                    <span class="font-label-md text-label-md font-bold text-primary" id="step3Title">Upload &amp; Conferência</span>
+                    <span class="font-label-sm text-label-sm text-primary font-semibold" id="step3Sub">Etapa Atual</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="relative z-10 flex flex-col md:items-center text-center group w-full md:w-auto opacity-70 transition-opacity" id="step4Node">
+                <div class="flex items-center md:flex-col gap-3 md:gap-2">
+                  <div class="w-10 h-10 rounded-full bg-surface-container-high border-2 border-outline-variant text-on-surface-variant flex items-center justify-center font-bold text-sm shrink-0 transition-all" id="step4Badge">
+                    <span id="step4Number">4</span>
+                  </div>
+                  <div class="flex flex-col md:items-center text-left md:text-center">
+                    <span class="font-label-md text-label-md font-medium text-on-surface-variant" id="step4Title">Confirmação &amp; Protocolo</span>
+                    <span class="font-label-sm text-label-sm text-on-surface-variant" id="step4Sub">Pendente</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Checklist Container -->
+      <div class="max-w-5xl w-full mx-auto px-6 lg:px-12 py-10 flex flex-col gap-8">
+        <!-- Official Advisory Banner -->
+        <div class="bg-surface-container-highest p-5 rounded-xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 relative overflow-hidden">
+          <div class="w-12 h-12 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-md">
+            <span class="material-symbols-outlined text-2xl">policy</span>
+          </div>
+          <div class="flex flex-col flex-1">
+            <span class="font-title-md text-title-md text-primary font-bold">Importante: leve seus documentos à secretaria</span>
+            <p class="font-body-md text-body-md text-on-surface-variant mt-0.5 leading-relaxed">
+              Enviar os arquivos aqui não encerra a matrícula. Depois, você deve ir à Secretaria da FAETERJ-Rio <strong>com os documentos originais e uma cópia legível de cada um</strong>. As cópias ficam guardadas na sua pasta de aluno.
+            </p>
+          </div>
+        </div>
+
+        <!-- Caixa de documentos faltando (mesmo modelo da Ficha Cadastral); preenchida por script.js -->
+        <div id="docsPendentesBox" class="hidden p-5 rounded-xl bg-error-container border-2 border-error/50 text-on-error-container space-y-3 shadow-md">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-error text-white flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[24px]">gpp_maybe</span>
+              </div>
+              <div>
+                <h3 class="font-title-md font-bold text-error">Quase lá! Faltam alguns documentos</h3>
+                <p class="font-body-sm text-on-error-container" id="docsPendentesMsg">Envie os documentos abaixo para poder se matricular.</p>
+              </div>
+            </div>
+            <button type="button" onclick="fecharCaixaPendencias()" class="text-error hover:opacity-80 p-1" title="Fechar">
+              <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+          <div class="p-3 bg-white/70 rounded-lg border border-error/20">
+            <p class="font-label-sm font-bold text-error mb-1.5 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">error</span>
+              O que está faltando (clique para ir ao documento):
+            </p>
+            <ul class="list-disc list-inside space-y-1 font-body-sm text-error font-medium" id="docsPendentesList"></ul>
+          </div>
+        </div>
+
+        <!-- Interactive Navigation Tabs -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <button class="px-5 py-3 rounded-xl font-label-md text-label-md font-semibold transition-all duration-200 flex items-center gap-2 bg-primary text-on-primary shadow-md" id="tabBtnAmpla" onclick="switchTab('ampla')">
+            <span class="material-symbols-outlined text-lg">folder_shared</span>
+            1. Ampla Concorrência (Geral)
+            <span class="ml-1.5 px-2 py-0.5 text-[11px] rounded-full bg-on-primary/20 text-on-primary font-bold" id="amplaTabCount">7 itens</span>
+          </button>
+          <button class="px-5 py-3 rounded-xl font-label-md text-label-md font-semibold transition-all duration-200 flex items-center gap-2 hover:bg-surface-container-high bg-surface-container text-on-surface" id="tabBtnCotas" onclick="switchTab('cotas')">
+            <span class="material-symbols-outlined text-lg">verified_user</span>
+            2. Documentação de Cotas (Condicional)
+            <span class="ml-1.5 px-2 py-0.5 text-[11px] rounded-full bg-secondary text-on-secondary font-bold" id="cotaTabBadge">Ativa</span>
+          </button>
+          <button class="px-5 py-3 rounded-xl font-label-md text-label-md font-semibold transition-all duration-200 flex items-center gap-2 bg-surface-container hover:bg-surface-container-high text-on-surface" id="tabBtnResumo" onclick="switchTab('resumo')">
+            <span class="material-symbols-outlined text-lg" id="resumoTabIcon">task_alt</span>
+            Resumo de Conformidade
+          </button>
+        </div>
+
+        <!-- TAB 1: Ampla Concorrência -->
+        <div class="flex-col gap-6 flex" id="sectionAmpla">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+            <div>
+              <h2 class="font-headline-md text-headline-md text-primary font-bold">Documentação Comum Obrigatória</h2>
+              <p class="font-body-md text-body-md text-on-surface-variant">Itens regulamentares exigidos de todos os ingressantes convocados no processo seletivo.</p>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-semibold self-start sm:self-auto" id="amplaCounterBadge">
+              <span class="w-2 h-2 rounded-full bg-tertiary"></span> <span id="amplaCounterText">0 de 7 enviados</span>
+            </span>
+          </div>
+
+          <!-- Itens 1 a 7: cards de envio gerados por script.js (renderDocsAmpla).
+               Cada documento aceita foto pela câmera ou arquivo (JPG, PNG ou PDF) de até 8MB. -->
+          <div class="flex flex-col gap-6" id="docsAmplaList"></div>
+
+          <!-- Item 8: Cópia do Diário Oficial -->
+          <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex flex-col gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-surface-container text-on-surface-variant flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-2xl">newspaper</span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-title-md text-title-md font-bold text-on-surface">8. Publicação no Diário Oficial da Conclusão</span>
+                    <span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-[11px] font-semibold">Se concluído até 2016</span>
+                  </div>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+                    Exigido apenas para concluintes de Ensino Médio de instituições privadas no Estado do Rio de Janeiro cuja conclusão ocorreu até 2016.
+                  </p>
+                  <div class="flex items-center gap-4 mt-3">
+                    <label class="flex items-center gap-2 cursor-pointer font-label-md text-label-md text-on-surface">
+                      <input class="text-primary focus:ring-0" name="do_option" onchange="toggleDiarioOficial(true)" type="radio" value="sim"> Possuo e vou anexar
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer font-label-md text-label-md text-on-surface">
+                      <input checked="" class="text-primary focus:ring-0" name="do_option" onchange="toggleDiarioOficial(false)" type="radio" value="dispensado"> Conclusão posterior a 2016 (Dispensado)
+                    </label>
+                  </div>
+                  <!-- Envio do recorte gerado por script.js (renderDocsAmpla) quando "Possuo e vou anexar" -->
+                  <div class="mt-3 hidden" id="doUploadBox"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: Documentação Específica de Cotas -->
+        <div class="flex-col gap-6 hidden" id="sectionCotas">
+          <div class="bg-primary text-on-primary p-6 rounded-xl shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 rounded-xl bg-on-primary/10 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-3xl">diversity_3</span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-[11px] font-bold">Vaga Reservada Ativa</span>
+                  <span class="font-label-sm text-label-sm text-on-primary-container">Protocolo SECTI #99281</span>
+                </div>
+                <h2 class="font-headline-md text-headline-md font-bold mt-1">Cota Socioeconômica &amp; Racial (Negro / Pardo)</h2>
+                <p class="font-body-md text-body-md text-on-primary-container">Conforme declarado no ato da inscrição. Documentação complementar sujeita a homologação da banca.</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 bg-on-primary/10 px-4 py-2 rounded-xl">
+              <span class="material-symbols-outlined text-tertiary-fixed text-xl">verified</span>
+              <span class="font-label-md text-label-md font-semibold" id="cotaCounterBadge">1 de 5 itens pendentes</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4">
+            <!-- 1. Declaração de Negro -->
+            <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div class="flex items-start sm:items-center gap-4 flex-1">
+                <div class="w-12 h-12 rounded-xl bg-surface-container text-primary flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-2xl">assignment_turned_in</span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-title-md text-title-md font-bold text-on-surface">Declaração de Autodeclaração Étnico-Racial</span>
+                    <span class="px-2.5 py-0.5 rounded-full bg-surface-container-highest text-primary font-label-sm text-label-sm font-semibold">Anexado</span>
+                  </div>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">Formulário oficial anexo do edital, devidamente assinado com caneta azul ou assinatura Gov.br.</p>
+                  <span class="font-label-sm text-label-sm text-primary font-medium mt-1 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">description</span> autodeclaracao_etnico_racial_assinado.pdf (410 KB)
+                  </span>
+                </div>
+              </div>
+              <button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition font-label-sm text-label-sm flex items-center gap-1" onclick="openDocumentPreview('Declaração de Autodeclaração Étnico-Racial', 'autodeclaracao_etnico_racial_assinado.pdf', '410 KB', 'pdf')">
+                <span class="material-symbols-outlined text-base">visibility</span> Visualizar
+              </button>
+            </div>
+
+            <!-- 2. Declaração do CAD ÚNICO -->
+            <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div class="flex items-start sm:items-center gap-4 flex-1">
+                <div class="w-12 h-12 rounded-xl bg-surface-container text-primary flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-2xl">family_restroom</span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-title-md text-title-md font-bold text-on-surface">Comprovante de Cadastro no CAD ÚNICO</span>
+                    <span class="px-2.5 py-0.5 rounded-full bg-surface-container-highest text-primary font-label-sm text-label-sm font-semibold">Anexado</span>
+                  </div>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">Certidão Oficial emitida através da plataforma Consulta Cidadão (gov.br/cidadania) com QR Code ativo.</p>
+                  <span class="font-label-sm text-label-sm text-primary font-medium mt-1 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">description</span> certidao_cadunico_validacao_digital.pdf (380 KB)
+                  </span>
+                </div>
+              </div>
+              <button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition font-label-sm text-label-sm flex items-center gap-1" onclick="openDocumentPreview('Comprovante de Cadastro no CAD ÚNICO', 'certidao_cadunico_validacao_digital.pdf', '380 KB', 'pdf')">
+                <span class="material-symbols-outlined text-base">visibility</span> Visualizar
+              </button>
+            </div>
+
+            <!-- 3. Formulário Socioeconômico -->
+            <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex flex-col gap-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-start sm:items-center gap-4 flex-1">
+                  <div class="w-12 h-12 rounded-xl bg-surface-container text-primary flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+                  </div>
+                  <div class="flex flex-col">
+                    <div class="flex items-center gap-2">
+                      <span class="font-title-md text-title-md font-bold text-on-surface">Formulário Socioeconômico Preenchido</span>
+                      <span class="px-2.5 py-0.5 rounded-full bg-surface-container-highest text-primary font-label-sm text-label-sm font-semibold">2 Arquivos Anexados</span>
+                    </div>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Discriminação detalhada da renda per capita de todos os integrantes da entidade familiar (Frente e Verso / Folhas 1 e 2).</p>
+                  </div>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-surface-container">
+                <div class="p-3.5 bg-surface-container-low rounded-xl border border-outline-variant flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="w-8 h-8 rounded-lg bg-surface-container-high text-primary flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-lg">description</span>
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                      <span class="font-label-sm text-label-sm font-semibold text-on-surface truncate">Arquivo 1: formulário_frente.pdf</span>
+                      <span class="font-body-sm text-xs text-on-surface-variant">620 KB • Conforme</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <button class="px-2.5 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition font-label-sm text-label-sm flex items-center gap-1" onclick="openDocumentPreview('Formulário Socioeconômico - Frente', 'formulario_socioeconomico_anexo_faeterj_frente.pdf', '620 KB', 'pdf')"><span class="material-symbols-outlined text-base">visibility</span> Visualizar</button>
+                  </div>
+                </div>
+                <div class="p-3.5 bg-surface-container-low rounded-xl border border-outline-variant flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="w-8 h-8 rounded-lg bg-surface-container-high text-primary flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-lg">description</span>
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                      <span class="font-label-sm text-label-sm font-semibold text-on-surface truncate">Arquivo 2: formulário_verso.pdf</span>
+                      <span class="font-body-sm text-xs text-on-surface-variant">580 KB • Conforme</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <button class="px-2.5 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition font-label-sm text-label-sm flex items-center gap-1" onclick="openDocumentPreview('Formulário Socioeconômico - Verso', 'formulario_socioeconomico_anexo_faeterj_verso.pdf', '580 KB', 'pdf')"><span class="material-symbols-outlined text-base">visibility</span> Visualizar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Identidade e CPF de todos os membros do CAD ÚNICO -->
+            <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex flex-col gap-4 border-2 border-dashed border-secondary/30 transition-all duration-300 hover:border-secondary" id="cardCadUnico">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-xl bg-error-container text-error flex items-center justify-center shrink-0 transition-colors" id="cadUnicoIconBox">
+                    <span class="material-symbols-outlined text-2xl" id="cadUnicoIcon">group</span>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-title-md text-title-md font-bold text-on-surface">Identidade e CPF dos Membros da Família</span>
+                      <span class="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold" id="cadUnicoBadge">Pendente (0 de 2 anexados)</span>
+                    </div>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Cópia do RG e CPF de cada pessoa descrita no cadastro familiar do CadÚnico. Anexe em até 2 arquivos.</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="text-error font-label-sm text-label-sm font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-sm">error</span> Envio obrigatório</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-surface-container">
+                <div class="p-4 bg-surface-container-low rounded-xl border border-outline-variant flex flex-col justify-between gap-3" id="cadUnicoSlot1">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-lg bg-surface-container-highest text-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-base">badge</span></div>
+                      <div><span class="font-label-sm text-label-sm font-bold text-on-surface block">Arquivo 1: RG e CPF do Titular / Pais</span><span class="font-body-sm text-xs text-on-surface-variant">Documentos dos responsáveis legais</span></div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-[11px] font-bold shrink-0" id="cadUnicoBadge1">Pendente</span>
+                  </div>
+                  <div class="flex items-center justify-between pt-2 border-t border-surface-container">
+                    <span class="text-xs text-on-surface-variant truncate max-w-[180px]" id="cadUnicoFileText1">Nenhum arquivo enviado</span>
+                    <label class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm font-semibold cursor-pointer hover:bg-primary-container transition flex items-center gap-1.5 shrink-0"><span class="material-symbols-outlined text-sm">upload_file</span> Enviar Arquivo 1<input accept=".pdf,.png,.jpg,.jpeg" class="hidden" onchange="handleFileInputChange(this, 'cadunico')" type="file"></label>
+                  </div>
+                </div>
+                <div class="p-4 bg-surface-container-low rounded-xl border border-outline-variant flex flex-col justify-between gap-3" id="cadUnicoSlot2">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-lg bg-surface-container-highest text-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-base">people</span></div>
+                      <div><span class="font-label-sm text-label-sm font-bold text-on-surface block">Arquivo 2: Demais Integrantes Familiares</span><span class="font-body-sm text-xs text-on-surface-variant">Irmãos, cônjuges ou dependentes cadastrados</span></div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-[11px] font-bold shrink-0" id="cadUnicoBadge2">Pendente</span>
+                  </div>
+                  <div class="flex items-center justify-between pt-2 border-t border-surface-container">
+                    <span class="text-xs text-on-surface-variant truncate max-w-[180px]" id="cadUnicoFileText2">Nenhum arquivo enviado</span>
+                    <label class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm font-semibold cursor-pointer hover:bg-primary-container transition flex items-center gap-1.5 shrink-0"><span class="material-symbols-outlined text-sm">upload_file</span> Enviar Arquivo 2<input accept=".pdf,.png,.jpg,.jpeg" class="hidden" onchange="handleFileInputChange(this, 'cadunico')" type="file"></label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. 2ª Foto 3x4 (Exigida para Cotistas) -->
+            <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div class="flex items-start sm:items-center gap-4 flex-1">
+                <div class="w-12 h-12 rounded-xl bg-surface-container text-primary flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-2xl">portrait</span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-title-md text-title-md font-bold text-on-surface">2ª Foto 3x4 (Dossiê Especial da Comissão)</span>
+                    <span class="px-2.5 py-0.5 rounded-full bg-surface-container-highest text-primary font-label-sm text-label-sm font-semibold">Anexado</span>
+                  </div>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">Segunda via física/digital obrigatória para registro de banca de heteroidentificação.</p>
+                  <span class="font-label-sm text-label-sm text-primary font-medium mt-1 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">image</span> foto_3x4_segunda_via_comissao.jpg (240 KB)
+                  </span>
+                </div>
+              </div>
+              <button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition font-label-sm text-label-sm flex items-center gap-1" onclick="openDocumentPreview('2ª Foto 3x4 - Comissão', 'foto_3x4_segunda_via_comissao.jpg', '240 KB', 'image', window.getFotoPrincipalSrc ? window.getFotoPrincipalSrc() : '')">
+                <span class="material-symbols-outlined text-base">visibility</span> Visualizar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: Resumo e Checklist Geral -->
+        <div class="hidden flex-col gap-6" id="sectionResumo">
+          <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex flex-col gap-6">
+            <div class="flex items-center justify-between pb-4 border-b border-surface-container">
+              <div>
+                <h3 class="font-headline-md text-headline-md font-bold text-primary">Conferência dos Requisitos</h3>
+                <p class="font-body-md text-body-md text-on-surface-variant">Verifique a situação final antes de disparar o protocolo à Secretaria Acadêmica.</p>
+              </div>
+              <div class="text-right">
+                <span class="font-headline-xl text-headline-xl font-bold text-primary" id="summaryTotalCounter">7/9</span>
+                <span class="block font-label-sm text-label-sm text-on-surface-variant">Documentos Enviados</span>
+              </div>
+            </div>
+            <!-- Lista gerada por script.js (renderResumoDocs) conforme os documentos enviados -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="summaryDocsGrid"></div>
+            <div class="bg-surface-container p-4 rounded-xl flex items-center gap-3" id="summaryAlertBox">
+              <span class="material-symbols-outlined text-primary text-xl">info</span>
+              <p class="font-body-sm text-body-sm text-on-surface-variant" id="summaryAlertText">Você ainda possui <strong>2 arquivos pendentes</strong>. Para desbloquear a homologação formal, complete os uploads nas abas correspondentes.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Actions / Submission Bar -->
+        <div class="rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 mt-4 pt-4">
+          <div class="flex items-center gap-4 w-full md:w-auto">
+            <a class="px-5 py-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold transition flex items-center gap-2 justify-center w-full md:w-auto" href="#" onclick="handlePreviousStep(event)">
+              <span class="material-symbols-outlined text-base">arrow_back</span> Etapa Anterior: Ficha Cadastral
+            </a>
+          </div>
+          <div class="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto justify-end">
+            <button class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold hover:bg-primary-container transition shadow-lg flex items-center justify-center gap-2 group" id="advanceButton" onclick="handleAdvanceSubmission()">
+              <span id="advanceBtnText">Passar para o Resumo de Conformidade</span>
+              <span class="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform" id="advanceBtnIcon">arrow_forward</span>
+              <span class="hidden animate-spin material-symbols-outlined text-base" id="advanceBtnSpinner">progress_activity</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Preview Documento -->
+    <div class="fixed inset-0 z-50 hidden items-center justify-center bg-inverse-surface/60 backdrop-blur-sm p-4" id="previewModal">
+      <div class="bg-surface-container-lowest rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh] animate-[fadeIn_0.2s_ease-out]">
+        <div class="p-5 border-b border-surface-container flex items-center justify-between bg-surface-container-low">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-primary-fixed text-primary flex items-center justify-center">
+              <span class="material-symbols-outlined text-xl" id="previewModalIcon">description</span>
+            </div>
+            <div>
+              <h4 class="font-title-md text-title-md font-bold text-on-surface" id="previewModalTitle">Visualização de Documento</h4>
+              <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1.5">
+                <span id="previewModalFilename">arquivo.pdf</span> • <span id="previewModalFilesize">0 KB</span> • <span class="text-tertiary font-semibold flex items-center gap-0.5"><span class="material-symbols-outlined text-xs">verified</span> Válido</span>
+              </span>
+            </div>
+          </div>
+          <button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition" onclick="closePreviewModal()">
+            <span class="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+        <div class="p-6 flex-1 overflow-y-auto flex flex-col items-center justify-center min-h-[280px] bg-surface">
+          <div class="hidden flex-col items-center justify-center" id="previewImageWrapper">
+            <img alt="Preview" class="max-h-[360px] rounded-lg shadow-md border border-outline-variant object-contain" id="previewImageContent" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgcng9IjgiIGZpbGw9IiNlOGVhZWQiLz48cGF0aCBkPSJNMTcwIDEzMCBsMzAgNDAgbDIwLTE1IGw0MCA1NSBIMTQweiIgZmlsbD0iI2JkYzFjNiIvPjxjaXJjbGUgY3g9IjI1MCIgY3k9IjEyMCIgcj0iMTgiIGZpbGw9IiNiZGMxYzYiLz48L3N2Zz4=">
+            <span class="text-xs text-on-surface-variant mt-2">Fotografia oficial para carteira estudantil e prontuário acadêmico</span>
+          </div>
+          <div class="flex flex-col items-center text-center p-8 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm max-w-md w-full" id="previewDocWrapper">
+            <div class="w-16 h-16 rounded-full bg-surface-container-high text-primary flex items-center justify-center mb-3">
+              <span class="material-symbols-outlined text-3xl">verified_user</span>
+            </div>
+            <span class="font-title-md text-title-md font-bold text-on-surface" id="previewDocType">Documento Digital Autenticado</span>
+            <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Validação criptográfica com chave ICP-Brasil / Carimbo de Secretaria Escolar.</p>
+            <div class="mt-4 p-3 bg-surface-container-low rounded-lg w-full text-left font-mono text-xs text-on-surface-variant space-y-1">
+              <div>Status: <span class="text-tertiary font-bold font-sans">✓ Conforme edital de ingresso</span></div>
+              <div>Assinatura: <span class="text-on-surface">SHA-256 Validado (SECTI-RJ)</span></div>
+              <div>Data de Envio: <span class="text-on-surface">Hoje às 10:42</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="p-4 bg-surface-container-low border-t border-surface-container flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <button class="px-3.5 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition" onclick="window.print()">
+              <span class="material-symbols-outlined text-base">print</span> Imprimir
+            </button>
+            <button class="px-3.5 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition" onclick="downloadCurrentMockFile()">
+              <span class="material-symbols-outlined text-base">download</span> Baixar
+            </button>
+          </div>
+          <button class="px-5 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold hover:bg-primary-container transition" onclick="closePreviewModal()">
+            Fechar Visualização
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Tirar Foto -->
+    <div class="fixed inset-0 z-50 hidden items-center justify-center bg-inverse-surface/60 backdrop-blur-sm p-4" id="cameraModal">
+      <div class="bg-surface-container-lowest rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col animate-[fadeIn_0.2s_ease-out]">
+        <div class="p-5 border-b border-surface-container flex items-center justify-between bg-surface-container-low">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-primary text-2xl">photo_camera</span>
+            <h4 class="font-title-md text-title-md font-bold text-on-surface" id="cameraModalTitle">Captura de Fotografia Digital</h4>
+          </div>
+          <button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition" onclick="closeCameraModal()">
+            <span class="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+        <div class="p-6 flex flex-col items-center">
+          <div class="relative w-64 h-80 rounded-xl overflow-hidden bg-neutral-900 border-2 border-primary shadow-inner flex items-center justify-center group">
+            <video autoplay class="hidden w-full h-full object-cover" id="webcamVideo" muted playsinline></video>
+            <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-slate-800 to-slate-950 text-white p-4 text-center" id="cameraFallbackSim">
+              <div class="w-32 h-44 border-2 border-dashed border-tertiary-fixed/60 rounded-full mb-3 flex items-center justify-center" id="cameraGuideFrame">
+                <span class="material-symbols-outlined text-4xl opacity-50" id="cameraGuideIcon">face</span>
+              </div>
+              <span class="text-xs font-semibold text-tertiary-fixed" id="cameraGuideTitle">Alinhe seu rosto dentro da demarcação</span>
+              <span class="text-[11px] text-slate-300 mt-1" id="cameraGuideSub">Iluminação uniforme e sem adereços</span>
+            </div>
+            <div class="absolute inset-0 bg-white opacity-0 pointer-events-none transition-opacity duration-150" id="cameraFlash"></div>
+          </div>
+          <div class="flex items-center gap-4 mt-6">
+            <button class="px-6 py-3 rounded-full bg-primary text-on-primary font-label-md text-label-md font-bold shadow-lg hover:bg-primary-container transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" id="cameraSnapBtn" onclick="triggerSnapPhoto()">
+              <span class="material-symbols-outlined text-xl">camera</span>
+              Capturar Foto
+            </button>
+            <button class="px-4 py-3 rounded-full bg-surface-container text-on-surface font-label-md text-label-md font-semibold hover:bg-surface-container-high transition" onclick="closeCameraModal()">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </section>
+
+    <!-- --------------------------------------------------------------------- -->
+    <!-- TELA 5: ETAPA 4 - CONFIRMAÇÃO & PROTOCOLO OFICIAL                      -->
+    <!-- --------------------------------------------------------------------- -->
+    <section id="tela-etapa4" class="hidden w-full flex-1 flex flex-col justify-center items-center py-6 px-4 sm:px-6">
+      <!-- Modal de sucesso -->
+      <div id="modal-sucesso-matricula" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-8 relative border border-[#c5c5d3]/40 flex flex-col gap-5 animate-in fade-in zoom-in-95">
+          <button type="button" onclick="document.getElementById('modal-sucesso-matricula').classList.add('hidden')" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-[#f8f9ff] hover:bg-[#dce1ff] text-[#444651] hover:text-primary flex items-center justify-center transition-colors cursor-pointer" aria-label="Fechar modal">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+          <div class="flex flex-col items-center text-center gap-3">
+            <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-inner">
+              <span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+            </div>
+            <h3 class="text-2xl font-extrabold text-[#0b1c30] tracking-tight" id="modalSucessoTitulo">Matrícula Realizada com Sucesso!</h3>
+          </div>
+          <div class="bg-emerald-50 border border-emerald-200/80 rounded-xl p-4">
+            <p class="text-sm text-emerald-950 font-medium leading-relaxed text-center sm:text-left" id="modalSucessoTexto">Seu formulário de Matrícula foi criado com sucesso.</p>
+          </div>
+          <div class="flex items-start gap-3 bg-amber-50 text-amber-900 border border-amber-200/70 rounded-xl p-3 text-xs leading-normal">
+            <span class="material-symbols-outlined text-[20px] text-amber-700 flex-shrink-0 mt-0.5">info</span>
+            <span><strong>Atenção:</strong> A vaga só é efetivada definitivamente após a conferência e validação presencial dos documentos originais e cópias na secretaria da FAETERJ-Rio.</span>
+          </div>
+          <div class="pt-2 flex flex-col sm:flex-row gap-3">
+            <button type="button" onclick="document.getElementById('modal-sucesso-matricula').classList.add('hidden')" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-primary hover:bg-primary-container text-white font-semibold text-sm transition-all shadow hover:shadow-md active:scale-98 cursor-pointer">
+              <span class="material-symbols-outlined text-[20px]">check</span>
+              <span>Entendi, prosseguir</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Notification System -->
+      <div class="fixed bottom-24 right-6 z-[9999] flex flex-col gap-3 pointer-events-none" id="toast-container"></div>
+
+      <div class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
+
+<!-- Stepper de Progresso (4 etapas) -->
+<div class="w-full bg-white rounded-2xl shadow-sm border border-[#c5c5d3]/30 p-6 no-print">
+<div class="relative">
+<div class="absolute top-5 left-10 right-10 h-1 bg-primary rounded-full hidden sm:block -z-0"></div>
+<div class="grid grid-cols-1 sm:grid-cols-4 gap-4 relative z-10">
+
+<!-- Etapa 1 -->
+<div class="flex sm:flex-col items-center sm:text-center gap-3 sm:gap-2">
+<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-base shadow-sm flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">done</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-sm font-semibold text-on-surface truncate">Modalidade &amp; Identificação</span>
+<span class="text-xs text-primary font-medium">Concluído</span>
+</div>
+</div>
+
+<!-- Etapa 2 -->
+<div class="flex sm:flex-col items-center sm:text-center gap-3 sm:gap-2">
+<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-base shadow-sm flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">done</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-sm font-semibold text-on-surface truncate">Dados &amp; Ficha Cadastral</span>
+<span class="text-xs text-primary font-medium">Concluído</span>
+</div>
+</div>
+
+<!-- Etapa 3 -->
+<div class="flex sm:flex-col items-center sm:text-center gap-3 sm:gap-2">
+<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-base shadow-sm flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">done</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-sm font-semibold text-on-surface truncate">Upload &amp; Conferência</span>
+<span class="text-xs text-primary font-medium">Concluído</span>
+</div>
+</div>
+
+<!-- Etapa 4 (atual) -->
+<div class="flex sm:flex-col items-center sm:text-center gap-3 sm:gap-2">
+<div class="w-10 h-10 rounded-full bg-primary text-on-primary ring-4 ring-primary-fixed flex items-center justify-center font-bold text-base shadow-md flex-shrink-0">4</div>
+<div class="flex flex-col min-w-0">
+<span class="text-sm font-bold text-primary truncate">Confirmação &amp; Protocolo</span>
+<span class="text-xs text-primary font-bold">Etapa Atual</span>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- Título e subtítulo -->
+<div class="w-full bg-white rounded-2xl shadow-sm border border-[#c5c5d3]/30 p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="text-2xl sm:text-3xl font-extrabold text-[#0b1c30] tracking-tight">Confirmação de Matrícula Online</h1>
+<p class="text-base text-on-surface-variant mt-1.5 leading-relaxed">Seus documentos e informações cadastrais foram submetidos com sucesso ao sistema acadêmico.</p>
+</div>
+<div class="flex items-center gap-2 self-start md:self-center px-4 py-2 bg-[#dce1ff] text-[#00164e] font-semibold text-xs rounded-full">
+<span class="w-2.5 h-2.5 rounded-full bg-[#215aba] animate-pulse"></span>
+Processo Finalizado
+</div>
+</div>
+
+<!-- Grid principal de 2 colunas -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+<!-- Coluna principal (8 colunas) -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<div class="bg-white rounded-2xl shadow-sm border border-[#c5c5d3]/30 p-6 sm:p-8 flex flex-col gap-6">
+
+<!-- Protocolo -->
+<div class="bg-[#eff4ff] border border-[#d3e4fe] p-5 sm:p-6 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-1.5 text-primary text-xs font-bold tracking-wider uppercase">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+NÚMERO DE PROTOCOLO DE MATRÍCULA
+</div>
+<div class="text-2xl sm:text-3xl font-extrabold tracking-tight text-primary select-all font-mono" id="protocol-number">—</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant text-xs mt-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span id="protocolo-data-rotulo">Registrado em:</span> <strong class="text-on-surface font-semibold" id="protocolo-data-hora">-</strong>
+</div>
+</div>
+<button class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[#c5c5d3] hover:bg-[#dce1ff] text-primary font-semibold text-sm transition-all shadow-sm self-start md:self-center no-print active:scale-95" id="copy-protocol-btn" onclick="copyProtocol()">
+<span class="material-symbols-outlined text-[18px]" id="copy-icon">content_copy</span>
+<span id="copy-text">Copiar Código</span>
+</button>
+</div>
+
+<!-- Resumo cadastral -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between border-b border-[#eff4ff] pb-3">
+<h3 class="text-lg font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[22px]">badge</span>
+Resumo Cadastral do Candidato
+</h3>
+<span class="text-xs px-3 py-1 rounded-full bg-[#d9e2ff] text-[#001943] font-bold">Classificado / Aprovado</span>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<!-- Nome completo -->
+<div class="bg-[#f8f9ff] border border-[#c5c5d3]/30 p-4 rounded-xl flex flex-col gap-1">
+<span class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Nome Completo</span>
+<span class="text-base font-bold text-on-surface" id="confirmacao-nome-candidato">Lucas Albuquerque de Mendonça</span>
+<span class="text-xs text-on-surface-variant font-mono" id="confirmacao-cpf-candidato">CPF: 148.***.***-09</span>
+</div>
+<!-- Curso -->
+<div class="bg-[#f8f9ff] border border-[#c5c5d3]/30 p-4 rounded-xl flex flex-col gap-1">
+<span class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Curso Graduação</span>
+<span class="text-base font-bold text-on-surface" id="confirmacao-curso-candidato">Superior de Tecnologia em ADS</span>
+<span class="text-xs text-on-surface-variant">Análise e Desenvolvimento de Sistemas</span>
+</div>
+<!-- Turno -->
+<div class="bg-[#f8f9ff] border border-[#c5c5d3]/30 p-4 rounded-xl flex flex-col gap-1">
+<span class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Turno Selecionado</span>
+<div class="flex items-center gap-2">
+<span class="text-base font-bold text-on-surface" id="confirmacao-turno-candidato">Turno Noite</span>
+<span class="px-2 py-0.5 rounded text-xs bg-primary-fixed text-on-primary-fixed font-bold" id="confirmacao-turno-horario">18h às 22:20h</span>
+</div>
+</div>
+<!-- Categoria / cota -->
+<div class="bg-[#f8f9ff] border border-[#c5c5d3]/30 p-4 rounded-xl flex flex-col gap-1">
+<span class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Categoria / Cota</span>
+<span class="text-base font-bold text-on-surface" id="confirmacao-cota-candidato">Ampla Concorrência (AC)</span>
+</div>
+</div>
+</div>
+
+<!-- Botões de ação -->
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 no-print border-t border-[#eff4ff]">
+<button class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-primary hover:bg-primary-container text-white font-semibold text-sm transition-all shadow hover:shadow-md active:scale-98" id="download-pdf-btn" onclick="downloadMatriculaPDF()">
+<span class="material-symbols-outlined text-[20px]">download</span>
+<span>Baixar Ficha de Matrícula em PDF</span>
+</button>
+<button class="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-[#d3e4fe] hover:bg-[#c5c5d3] text-primary font-semibold text-sm transition-all shadow-sm active:scale-98" onclick="printComprovante()">
+<span class="material-symbols-outlined text-[20px]">print</span>
+<span>Imprimir Comprovante</span>
+</button>
+<button type="button" class="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-secondary text-secondary hover:bg-secondary-fixed/50 font-semibold text-sm transition-all shadow-sm active:scale-98" onclick="editarDadosMatricula()">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+<span>Editar Dados da Matrícula</span>
+</button>
+<a class="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-[#c5c5d3] hover:bg-[#eff4ff] text-on-surface font-semibold text-sm transition-all cursor-pointer" href="#" onclick="voltarAoPortal(event)">
+<span class="material-symbols-outlined text-[20px]">home</span>
+<span>Voltar ao Portal</span>
+</a>
+</div>
+
+<!-- Aviso âmbar -->
+<div class="flex items-center gap-2 text-xs text-on-surface-variant pt-2 bg-amber-50 text-amber-900 border border-amber-200/60 rounded-lg p-3">
+<span class="material-symbols-outlined text-[18px] text-amber-700 flex-shrink-0">info</span>
+<span><strong>Lembre-se:</strong> A ficha de presença deverá ser assinada presencialmente no início do semestre letivo.</span>
+</div>
+
+</div>
+</div>
+
+<!-- Coluna lateral (4 colunas) -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+
+<!-- Card da unidade -->
+<div class="bg-white rounded-2xl shadow-sm border border-[#c5c5d3]/30 p-6 flex flex-col gap-4">
+<div class="flex items-center gap-3 border-b border-[#eff4ff] pb-3">
+<div class="w-10 h-10 rounded-xl bg-[#dce1ff] text-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">school</span>
+</div>
+<div>
+<h3 class="text-base font-bold text-on-surface leading-tight">FAETERJ - Unidade Rio de Janeiro</h3>
+<span class="text-xs text-on-surface-variant">Campus Quintino</span>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<div class="flex items-start gap-2.5 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-primary flex-shrink-0 mt-0.5">location_on</span>
+<span>Rua Fictícia, 100 — Centro, Rio de Janeiro - RJ, CEP 20000-000</span>
+</div>
+<div class="flex items-center justify-between text-xs p-3 rounded-xl bg-[#eff4ff] border border-[#d3e4fe]">
+<span class="text-on-surface-variant font-medium">Atendimento Secretaria:</span>
+<strong class="text-primary font-bold">08:00h às 20:30h</strong>
+</div>
+<div class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-primary flex-shrink-0">mail</span>
+<a class="text-secondary hover:underline truncate font-medium" href="mailto:sec_acad@exemplo.com">sec_acad@exemplo.com</a>
+</div>
+</div>
+</div>
+
+<!-- Próximos passos -->
+<div class="bg-white rounded-2xl shadow-sm border border-[#c5c5d3]/30 p-6 flex flex-col gap-3">
+<h4 class="text-sm font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">vpn_key</span>
+Próximos Passos
+</h4>
+<ul class="text-xs text-on-surface-variant space-y-2.5">
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-[18px] mt-0.5 flex-shrink-0">check_small</span>
+<span>Durante o periodo de matricula, venha para instituição apresentar os documentos original e copía.&nbsp;</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-[18px] mt-0.5 flex-shrink-0">check_small</span>
+<span>Guarde o comprovante impresso ou em PDF com o número do protocolo.</span>
+</li>
+</ul>
+</div>
+
+</div>
+</div>
+</div>
+      </div>
+
+      <!-- Botões flutuantes de rolagem rápida -->
+      <div class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 no-print" id="scroll-navigation-controls">
+        <button aria-label="Rolar para o topo" class="w-10 h-10 rounded-full bg-white text-primary border border-[#c5c5d3] shadow-md hover:shadow-lg flex items-center justify-center transition-all hover:bg-[#eff4ff] active:scale-95 cursor-pointer" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
+          <span class="material-symbols-outlined text-[20px]">arrow_upward</span>
+        </button>
+        <button aria-label="Rolar para o final da página" class="w-10 h-10 rounded-full bg-white text-primary border border-[#c5c5d3] shadow-md hover:shadow-lg flex items-center justify-center transition-all hover:bg-[#eff4ff] active:scale-95 cursor-pointer" onclick="window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })">
+          <span class="material-symbols-outlined text-[20px]">arrow_downward</span>
+        </button>
+      </div>
+    </section>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CONSULTA DE PROTOCOLO / VERIFICAR MATRÍCULA                       -->
+  <!-- ========================================================================= -->
+  <div id="modalConsulta" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-surface-container-lowest rounded-3xl shadow-2xl border border-surface-container-high p-6 sm:p-8 space-y-5">
+      <div class="flex items-center justify-between border-b border-surface-container-high/40 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+            <span class="material-symbols-outlined text-[20px]">query_stats</span>
+          </div>
+          <h3 class="text-base font-bold text-on-surface">Verificar Matrícula</h3>
+        </div>
+        <button type="button" onclick="fecharModalConsulta()" class="text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Consulta: CPF + senha cadastrada no início da matrícula -->
+      <form id="formConsultaLogin" onsubmit="event.preventDefault(); executarConsultaProtocolo();" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-on-surface mb-1" for="consultaCpfInput">
+            CPF do Candidato
+          </label>
+          <input type="text" id="consultaCpfInput" inputmode="numeric" maxlength="14" oninput="maskCPF(this)" placeholder="000.000.000-00" autocomplete="username" class="w-full px-3.5 py-2.5 bg-surface-container-low border border-surface-container-high rounded-xl text-xs font-mono font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-on-surface mb-1" for="consultaSenhaInput">
+            Senha
+          </label>
+          <input type="password" id="consultaSenhaInput" placeholder="A senha criada no início da matrícula" autocomplete="current-password" class="w-full px-3.5 py-2.5 bg-surface-container-low border border-surface-container-high rounded-xl text-xs font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary">
+          <button type="button" onclick="mostrarRedefinirSenhaConsulta(true)" class="mt-1.5 text-xs text-secondary font-semibold hover:underline">
+            Esqueci minha senha
+          </button>
+        </div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-secondary hover:bg-primary text-on-secondary font-bold text-xs uppercase tracking-wider transition shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+          <span class="material-symbols-outlined text-[18px]">search</span>
+          <span>Consultar Status</span>
+        </button>
+      </form>
+
+      <!-- Troca de senha: CPF + data de nascimento -->
+      <form id="formConsultaRedefinir" onsubmit="event.preventDefault(); executarRedefinirSenhaConsulta();" class="hidden space-y-4">
+        <p class="text-xs text-on-surface-variant leading-relaxed">Para criar uma nova senha, confirme seu CPF e sua data de nascimento (a mesma informada na ficha de matrícula).</p>
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-on-surface mb-1" for="redefCpfInput">CPF do Candidato</label>
+          <input type="text" id="redefCpfInput" inputmode="numeric" maxlength="14" oninput="maskCPF(this)" placeholder="000.000.000-00" class="w-full px-3.5 py-2.5 bg-surface-container-low border border-surface-container-high rounded-xl text-xs font-mono font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-on-surface mb-1" for="redefNascimentoInput">Data de Nascimento</label>
+          <input type="text" id="redefNascimentoInput" inputmode="numeric" maxlength="10" oninput="maskDate(this)" placeholder="dd/mm/aaaa" class="w-full px-3.5 py-2.5 bg-surface-container-low border border-surface-container-high rounded-xl text-xs font-mono font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary">
+        </div>
+        <!-- V3: aparece só quando há lista de convocados -->
+        <div class="hidden" id="redefInscricaoBloco">
+          <label class="block text-xs font-bold uppercase tracking-wider text-on-surface mb-1" for="redefInscricaoInput">Inscrição do ENEM</label>
+          <input type="text" id="redefInscricaoInput" inputmode="numeric" maxlength="12" autocomplete="off" placeholder="12 dígitos, como na lista de convocados" class="w-full px-3.5 py-2.5 bg-surface-container-low border border-surface-container-high rounded-xl text-xs font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-on-surface mb-1" for="redefSenhaInput">Nova Senha</label>
+          <input type="password" id="redefSenhaInput" placeholder="Mínimo de 6 caracteres" autocomplete="new-password" class="w-full px-3.5 py-2.5 bg-surface-container-low border border-surface-container-high rounded-xl text-xs font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-on-surface mb-1" for="redefSenha2Input">Repita a Nova Senha</label>
+          <input type="password" id="redefSenha2Input" autocomplete="new-password" class="w-full px-3.5 py-2.5 bg-surface-container-low border border-surface-container-high rounded-xl text-xs font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary">
+        </div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-secondary hover:bg-primary text-on-secondary font-bold text-xs uppercase tracking-wider transition shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+          <span class="material-symbols-outlined text-[18px]">lock_reset</span>
+          <span>Alterar Senha</span>
+        </button>
+        <button type="button" onclick="mostrarRedefinirSenhaConsulta(false)" class="w-full text-xs text-secondary font-semibold hover:underline">
+          Voltar para a consulta
+        </button>
+      </form>
+
+      <div id="resultadoConsultaBox" class="hidden p-4 bg-surface-container-low rounded-2xl border border-surface-container-high text-xs space-y-2">
+        <!-- Renderizado dinamicamente -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: AJUDA & ORIENTAÇÕES                                                -->
+  <!-- ========================================================================= -->
+  <div id="modalAjuda" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-lg bg-surface-container-lowest rounded-3xl shadow-2xl border border-surface-container-high p-6 sm:p-8 space-y-4">
+      <div class="flex items-center justify-between border-b border-surface-container-high/40 pb-3">
+        <h3 class="text-base font-bold text-on-surface">Ajuda & Orientações ao Convocado</h3>
+        <button type="button" onclick="fecharModalAjuda()" class="text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="text-xs text-on-surface-variant space-y-2.5 leading-relaxed">
+        <p><strong>1. Documentos Obrigatórios:</strong> RG ou CNH (com foto e validade), CPF, Certidão Civil de Nascimento ou Casamento, Histórico Escolar com certificado de conclusão do Ensino Médio e 1 foto 3x4 com fundo branco.</p>
+        <p><strong>2. Cotistas da Rede Pública:</strong> Obrigatória comprovação de conclusão integral do Ensino Médio em escola pública estadual, municipal ou federal.</p>
+        <p><strong>3. Atendimento Presencial:</strong> Secretaria Acadêmica da FAETERJ-Rio &bull; Rua Fictícia, 100, Centro, Rio de Janeiro - RJ (endereço fictício).</p>
+        <p><strong>4. Atendimento por E-mail:</strong> <a class="text-primary font-semibold hover:underline" href="mailto:sec_acad@exemplo.com?subject=Ajuda%20com%20a%20matr%C3%ADcula%20-%20FAETERJ-Rio">sec_acad@exemplo.com</a></p>
+      </div>
+      <div class="pt-2 flex justify-end">
+        <button type="button" onclick="fecharModalAjuda()" class="px-4 py-2 bg-surface-container-low text-on-surface font-semibold rounded-xl text-xs hover:bg-surface-container">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: TERMOS DE PRIVACIDADE (LGPD)                                       -->
+  <!-- ========================================================================= -->
+  <div id="modalLgpd" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-lg bg-surface-container-lowest rounded-3xl shadow-2xl border border-surface-container-high p-6 sm:p-8 space-y-4">
+      <div class="flex items-center justify-between border-b border-surface-container-high/40 pb-3">
+        <h3 class="text-base font-bold text-on-surface">Termos de Privacidade (LGPD)</h3>
+        <button type="button" onclick="fecharModalLgpd()" class="text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="text-xs text-on-surface-variant space-y-2.5 leading-relaxed">
+        <p><strong>1. Finalidade:</strong> Seus dados pessoais e documentos são usados somente para realizar e conferir sua matrícula na FAETERJ-Rio.</p>
+        <p><strong>2. Compartilhamento:</strong> Os dados não são vendidos nem repassados a terceiros. O acesso é restrito à Secretaria Acadêmica.</p>
+        <p><strong>3. Conferência:</strong> Os documentos enviados são conferidos pela secretaria. Os originais devem ser apresentados no balcão.</p>
+        <p><strong>4. Seus direitos:</strong> Você pode pedir acesso, correção ou exclusão dos seus dados, conforme a Lei nº 13.709/2018 (LGPD), pelo e-mail <a class="text-primary font-semibold hover:underline" href="mailto:sec_acad@exemplo.com?subject=LGPD%20-%20Dados%20pessoais">sec_acad@exemplo.com</a>.</p>
+      </div>
+      <div class="pt-2 flex justify-end">
+        <button type="button" onclick="fecharModalLgpd()" class="px-4 py-2 bg-surface-container-low text-on-surface font-semibold rounded-xl text-xs hover:bg-surface-container">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- FOOTER OFICIAL                                                            -->
+  <!-- ========================================================================= -->
+  <footer class="w-full bg-surface-container-low py-8 mt-12 no-print border-t border-surface-container-high">
+    <div class="w-full max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+      <div class="flex flex-col gap-1">
+        <p class="text-xs font-semibold text-on-surface">FAETERJ - RIO &bull; Secretaria de Estado de Ciência, Tecnologia e Inovação</p>
+        <p class="text-[11px] text-on-surface-variant">Fundação de Apoio à Escola Técnica (FAETEC) &bull; Governo do Estado do Rio de Janeiro</p>
+      </div>
+      <div class="flex items-center">
+        <div class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-lowest text-tertiary border border-outline-variant text-xs font-semibold shadow-2xs">
+          <span class="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+          <span>Conformidade com a LGPD (Lei 13.709/18)</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script src="confirmacao.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

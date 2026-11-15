@@ -1,0 +1,10 @@
+{
+  "janela_matricula_aberta": true,
+  "data_inicio": "2026-01-01T00:00:00.000Z",
+  "data_fim": "2026-12-31T23:59:59.000Z",
+  "tempo_limite_minutos": 60,
+  "semestre_vigente": "2026.1",
+  "mensagem_bloqueio": "O período regulamentar de matrículas está encerrado pela Secretaria Acadêmica da FAETERJ-Rio. Para orientações adicionais, procure o atendimento presencial da unidade.",
+  "atualizado_em": "2026-09-25T12:00:00.000Z",
+  "atualizado_por": "Secretaria Acadêmica"
+}

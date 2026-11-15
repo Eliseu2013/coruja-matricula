@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acesso Administrativo | FAETERJ-Rio Coruja</title>
+  <!-- Defensive Window.fetch Safe Setter Guard -->
+  <script>
+    (function() {
+      try {
+        const originalFetch = (typeof window !== 'undefined' && window.fetch) ? window.fetch.bind(window) : null;
+        let activeFetch = originalFetch;
+        if (typeof window !== 'undefined') {
+          Object.defineProperty(window, 'fetch', {
+            get: function() {
+              return activeFetch || originalFetch;
+            },
+            set: function(fn) {
+              if (typeof fn === 'function') {
+                activeFetch = fn;
+              }
+            },
+            configurable: true,
+            enumerable: true
+          });
+        }
+      } catch (e) {
+        // Safe fallback
+      }
+    })();
+  </script>
+  <!-- V8: Font Awesome 6.5.1 servido pelo próprio site (antes vinha do cdnjs, sem verificação de integridade) -->
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- V8: o SheetJS (xlsx) vinha de CDN externo mas não é usado nesta página; foi removido -->
+  <script src="apiClient.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+      animation-duration: 0s !important;
+      transition-duration: 0s !important;
+      animation-delay: 0s !important;
+      transition-delay: 0s !important;
+      scroll-behavior: auto !important;
+    }
+  </style>
+  <!-- V8: Tailwind compilado localmente (npm run build:css), por último como o CDN antigo fazia -->
+  <link rel="stylesheet" href="tailwind-login.css">
+</head>
+<body class="min-h-screen bg-slate-100 flex flex-col justify-between text-slate-800 selection:bg-blue-600 selection:text-white">
+  <!-- Background Decorative Shapes -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 -right-40 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-20 left-1/3 w-80 h-80 bg-sky-500/10 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Clean Top Bar -->
+  <header class="relative z-10 w-full border-b border-blue-900 bg-[#0f3b7a] text-white px-4 sm:px-6 py-2.5 flex items-center justify-between shadow-sm">
+    <div class="flex items-center space-x-2">
+      <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-amber-400">
+        <i class="fa-solid fa-graduation-cap"></i>
+      </div>
+      <div>
+        <span class="font-extrabold text-sm text-white tracking-tight">FAETERJ-Rio (Quintino)</span>
+      </div>
+    </div>
+    <a href="index.html" class="flex items-center space-x-2 text-xs text-white hover:bg-white/10 transition px-3 py-1.5 rounded-lg border border-white/20 font-semibold">
+      <i class="fa-solid fa-arrow-left"></i>
+      <span>Voltar para Matrícula</span>
+    </a>
+  </header>
+
+  <!-- Main Login Card -->
+  <main class="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-6">
+    <div class="w-full max-w-md bg-white border border-slate-200/90 rounded-2xl shadow-xl p-6 sm:p-8 relative overflow-hidden">
+      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0f3b7a] via-blue-600 to-amber-400"></div>
+      
+      <!-- Card Header -->
+      <div class="text-center mb-8 pt-2">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-50 border border-blue-200 shadow-sm mb-4 text-[#0f3b7a] text-xl">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <h1 class="text-2xl font-black text-slate-900 tracking-tight">Portal de Acesso</h1>
+        <p class="text-xs text-slate-500 mt-1">Secretaria Acadêmica, Coordenação e Aluno Candidato</p>
+      </div>
+
+      <!-- Alert Box -->
+      <div id="alertBox" class="hidden mb-6 p-4 rounded-xl text-sm border flex items-start space-x-3">
+        <i id="alertIcon" class="fa-solid fa-circle-exclamation mt-0.5 text-base"></i>
+        <div id="alertMessage" class="flex-1 font-medium"></div>
+      </div>
+
+      <!-- Form -->
+      <form id="loginForm" class="space-y-5">
+        <div>
+          <label for="login" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+            E-mail, CPF ou Usuário
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-envelope text-xs"></i>
+            </div>
+            <input 
+              type="text" 
+              id="login" 
+              name="login" 
+              required 
+              autocomplete="username"
+              placeholder="Ex: seu.email@exemplo.com ou 000.000.000-00"
+              class="w-full pl-10 pr-4 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-[#0f3b7a] focus:bg-white transition text-sm"
+            >
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label for="senha" class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              Senha de Acesso
+            </label>
+            <button 
+              type="button" 
+              onclick="abrirModalEsqueciSenhaLogin()"
+              class="text-xs font-bold text-[#0f3b7a] hover:underline cursor-pointer"
+            >
+              Esqueci minha senha
+            </button>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-lock text-xs"></i>
+            </div>
+            <input 
+              type="password" 
+              id="senha" 
+              name="senha" 
+              required 
+              autocomplete="current-password"
+              placeholder="••••••••"
+              class="w-full pl-10 pr-11 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-[#0f3b7a] focus:bg-white transition text-sm"
+            >
+            <button 
+              type="button" 
+              id="togglePassword"
+              class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-700 transition"
+              title="Mostrar/Ocultar senha"
+            >
+              <i class="fa-regular fa-eye" id="eyeIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          id="btnSubmit"
+          class="w-full py-3 px-4 bg-[#0f3b7a] hover:bg-[#1e40af] text-white font-extrabold rounded-xl shadow-md shadow-blue-900/15 hover:shadow-lg transition duration-200 flex items-center justify-center space-x-2 text-xs uppercase tracking-wider mt-2"
+        >
+          <i class="fa-solid fa-arrow-right-to-bracket"></i>
+          <span id="btnText">Entrar no Sistema</span>
+        </button>
+      </form>
+
+      <!-- LGPD Security Notice -->
+      <div class="mt-6 p-3.5 bg-emerald-50/70 border border-emerald-200/80 rounded-xl text-left flex items-start space-x-2.5 text-xs text-emerald-950">
+        <i class="fa-solid fa-user-shield text-emerald-700 text-sm mt-0.5 shrink-0"></i>
+        <div>
+          <span class="font-bold text-emerald-900 block text-[11px] uppercase tracking-wider">Tratamento Seguro de Dados (LGPD)</span>
+          <p class="text-[11px] text-emerald-800 mt-0.5 leading-relaxed">
+            O acesso aos registros acadêmicos e dados de discentes é estritamente monitorado e auditado conforme a <strong>Lei Federal nº 13.709/2018 (LGPD)</strong>.
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Fill Helper for Easy Test -->
+      <div class="mt-4 pt-4 border-t border-slate-100 text-center">
+        <div class="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-3.5 text-xs text-slate-700">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[#0f3b7a] font-bold text-xs"><i class="fa-solid fa-users text-blue-600 mr-1.5"></i>Perfis e Credenciais Disponíveis:</span>
+          </div>
+          
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-left text-[11px] mb-2.5">
+            <button type="button" onclick="selectProfile('candidato')" class="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 hover:border-emerald-500 transition flex items-center justify-between text-slate-800 col-span-2 sm:col-span-3 shadow-xs">
+              <div class="flex items-center space-x-2">
+                <div class="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs">
+                  <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <div>
+                  <span class="font-extrabold text-emerald-950 block">Aluno / Candidato (Ficha de Matrícula)</span>
+                  <span class="text-[10px] text-emerald-800">Login com CPF ou E-mail + Senha</span>
+                </div>
+              </div>
+              <span class="text-[10px] font-mono font-bold bg-white px-2 py-0.5 rounded-md border border-emerald-200 text-emerald-900">
+                123.456.789-00
+              </span>
+            </button>
+            <button type="button" onclick="selectProfile('secretaria')" class="p-1.5 rounded-lg bg-white hover:bg-amber-50 border border-blue-200 hover:border-amber-400 transition flex flex-col text-slate-800">
+              <span class="font-bold text-[#0f3b7a]"><i class="fa-solid fa-user-tie mr-1 text-amber-500"></i>Secretaria</span>
+              <span class="text-[9px] text-slate-500">secretaria</span>
+            </button>
+            <button type="button" onclick="selectProfile('admin')" class="p-1.5 rounded-lg bg-white hover:bg-amber-50 border border-blue-200 hover:border-amber-400 transition flex flex-col text-slate-800">
+              <span class="font-bold text-[#0f3b7a]"><i class="fa-solid fa-shield-halved mr-1 text-blue-500"></i>Super Admin</span>
+              <span class="text-[9px] text-slate-500">admin</span>
+            </button>
+            <button type="button" onclick="selectProfile('coordenacao')" class="p-1.5 rounded-lg bg-white hover:bg-amber-50 border border-blue-200 hover:border-amber-400 transition flex flex-col text-slate-800">
+              <span class="font-bold text-[#0f3b7a]"><i class="fa-solid fa-graduation-cap mr-1 text-indigo-500"></i>Coordenação</span>
+              <span class="text-[9px] text-slate-500">coordenacao</span>
+            </button>
+            <button type="button" onclick="selectProfile('atendimento')" class="p-1.5 rounded-lg bg-white hover:bg-amber-50 border border-blue-200 hover:border-amber-400 transition flex flex-col text-slate-800">
+              <span class="font-bold text-[#0f3b7a]"><i class="fa-solid fa-headset mr-1 text-emerald-500"></i>Balcão</span>
+              <span class="text-[9px] text-slate-500">atendimento</span>
+            </button>
+            <button type="button" onclick="selectProfile('auditoria')" class="p-1.5 rounded-lg bg-white hover:bg-amber-50 border border-blue-200 hover:border-amber-400 transition flex flex-col text-slate-800 sm:col-span-2">
+              <span class="font-bold text-[#0f3b7a]"><i class="fa-solid fa-clipboard-check mr-1 text-purple-500"></i>Auditoria & LGPD</span>
+              <span class="text-[9px] text-slate-500">auditoria</span>
+            </button>
+          </div>
+          <div class="text-[11px] font-mono bg-white p-2 rounded-lg border border-blue-100 text-slate-700 text-center">
+            Clique em qualquer perfil acima para preencher o formulário automaticamente.
+          </div>
+          
+          <div class="mt-3 pt-2.5 border-t border-blue-200/80 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span class="text-[11px] text-slate-600 font-semibold flex items-center">
+              <i class="fa-solid fa-table text-emerald-600 mr-1.5"></i>Planilha de Credenciais:
+            </span>
+            <div class="flex items-center space-x-1.5 w-full sm:w-auto justify-end">
+              <button 
+                type="button" 
+                onclick="baixarPlanilhaPerfisLogin('xlsx')" 
+                class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-[11px] shadow-sm transition flex items-center space-x-1"
+                title="Baixar planilha formatada em Excel (.xlsx)"
+              >
+                <i class="fa-solid fa-file-excel mr-1"></i><span>Baixar Excel (.XLSX)</span>
+              </button>
+              <button 
+                type="button" 
+                onclick="baixarPlanilhaPerfisLogin('csv')" 
+                class="px-2 py-1 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-lg text-[11px] transition flex items-center space-x-1"
+                title="Baixar em formato CSV (.csv)"
+              >
+                <i class="fa-solid fa-file-csv mr-1"></i><span>CSV</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="relative z-10 w-full border-t border-slate-200 bg-white py-4 px-6 text-center text-xs text-slate-500">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>FAETERJ-Rio &bull; Fundação de Apoio à Escola Técnica (FAETEC) &bull; Governo do Estado do Rio de Janeiro</p>
+      <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-800 text-[11px] font-bold rounded-full border border-emerald-200">
+        <i class="fa-solid fa-shield-halved text-emerald-600"></i>
+        <span>Conforme LGPD (Lei 13.709/18)</span>
+      </span>
+    </div>
+  </footer>
+
+  <script>
+    const togglePassword = document.getElementById('togglePassword');
+    const senhaInput = document.getElementById('senha');
+    const eyeIcon = document.getElementById('eyeIcon');
+    if (togglePassword && senhaInput && eyeIcon) {
+      togglePassword.addEventListener('click', () => {
+        const type = senhaInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        senhaInput.setAttribute('type', type);
+        eyeIcon.classList.toggle('fa-eye');
+        eyeIcon.classList.toggle('fa-eye-slash');
+      });
+    }
+
+    // Escapa texto antes de inserir via innerHTML (evita XSS com mensagens vindas do servidor)
+    function escHtml(v) {
+      return String(v === null || v === undefined ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function selectProfile(profile) {
+      if (profile === 'candidato' || profile === 'aluno') {
+        document.getElementById('login').value = '123.456.789-00';
+      } else {
+        document.getElementById('login').value = profile;
+      }
+      document.getElementById('senha').value = 'faeterj2026';
+    }
+
+    const loginForm = document.getElementById('loginForm');
+    const alertBox = document.getElementById('alertBox');
+    const alertMessage = document.getElementById('alertMessage');
+    const alertIcon = document.getElementById('alertIcon');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const btnText = document.getElementById('btnText');
+
+    function showAlert(msg, type = 'error') {
+      if (!alertBox || !alertMessage || !alertIcon) return;
+      alertBox.classList.remove('hidden', 'bg-red-950/70', 'border-red-800', 'text-red-300', 'bg-emerald-950/70', 'border-emerald-800', 'text-emerald-300', 'bg-red-50', 'text-red-800', 'border-red-300', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-300');
+      if (type === 'error') {
+        alertBox.classList.add('bg-red-50', 'border-red-300', 'text-red-800');
+        alertIcon.className = 'fa-solid fa-circle-exclamation mt-0.5 text-base text-red-600';
+      } else {
+        alertBox.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-800');
+        alertIcon.className = 'fa-solid fa-circle-check mt-0.5 text-base text-emerald-600';
+      }
+      alertMessage.textContent = msg;
+    }
+
+    if (loginForm) {
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const login = document.getElementById('login').value.trim();
+        const senha = document.getElementById('senha').value;
+        if (!login || !senha) {
+          showAlert('Por favor, preencha todos os campos.', 'error');
+          return;
+        }
+        btnSubmit.disabled = true;
+        btnText.textContent = 'Autenticando...';
+        try {
+          let data;
+          if (window.apiClient) {
+            data = await window.apiClient.auth.login({ login, senha });
+          } else {
+            const response = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ login, senha })
+            });
+            data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Credenciais inválidas.');
+          }
+
+          if (data.tipo === 'ALUNO' || data.aluno) {
+            showAlert(data.message || 'Login de candidato realizado! Redirecionando para a Ficha de Matrícula...', 'success');
+            if (window.apiClient) {
+              window.apiClient.setSession(data.token, data.aluno || data.user, 'ALUNO');
+            } else {
+              localStorage.setItem('aluno_token', data.token);
+              localStorage.setItem('aluno_user', JSON.stringify(data.aluno || data.user));
+            }
+            setTimeout(() => {
+              window.location.href = data.redirect || 'index.html';
+            }, 800);
+          } else {
+            showAlert('Login realizado com sucesso! Redirecionando...', 'success');
+            if (window.apiClient) {
+              window.apiClient.setSession(data.token, data.user, 'ADMIN');
+            } else {
+              localStorage.setItem('coruja_token', data.token);
+              localStorage.setItem('coruja_user', JSON.stringify(data.user));
+            }
+            setTimeout(() => {
+              window.location.href = data.redirect || 'index.html';
+            }, 800);
+          }
+        } catch (err) {
+          showAlert(err.message, 'error');
+        } finally {
+          btnSubmit.disabled = false;
+          btnText.textContent = 'Entrar no Sistema';
+        }
+      });
+    }
+
+    function baixarPlanilhaPerfisLogin(formato = 'xlsx') {
+      window.location.href = '/api/perfis/download-planilha';
+    }
+
+    function abrirModalEsqueciSenhaLogin() {
+      const emailOuCpf = document.getElementById('login')?.value?.trim() || '';
+      const inputIdent = document.getElementById('recuperarIdentificador');
+      if (inputIdent && emailOuCpf) inputIdent.value = emailOuCpf;
+      document.getElementById('etapaRecuperacao1')?.classList.remove('hidden');
+      document.getElementById('etapaRecuperacao2')?.classList.add('hidden');
+      document.getElementById('msgRecuperacaoBox')?.classList.add('hidden');
+      document.getElementById('modalEsqueciSenhaLogin')?.classList.remove('hidden');
+    }
+
+    function fecharModalEsqueciSenhaLogin() {
+      document.getElementById('modalEsqueciSenhaLogin')?.classList.add('hidden');
+    }
+
+    async function solicitarCodigoRecuperacaoLogin(e) {
+      if (e) e.preventDefault();
+      const ident = document.getElementById('recuperarIdentificador')?.value?.trim();
+      const btn = document.getElementById('btnEnviarCodigoRecuperacao');
+      const msgBox = document.getElementById('msgRecuperacaoBox');
+      if (!ident) {
+        showAlert('Por favor, informe seu e-mail cadastrado ou CPF.', 'error');
+        return;
+      }
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Enviando...';
+      }
+      try {
+        let data;
+        if (window.apiClient) {
+          data = await window.apiClient.auth.solicitarRecuperacao({ email: ident, cpf: ident });
+        } else {
+          const res = await fetch('/api/auth/esqueci-senha', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: ident, cpf: ident })
+          });
+          data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Erro ao solicitar recuperação.');
+        }
+
+        if (msgBox) {
+          msgBox.className = 'p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-xs text-emerald-900 flex items-start space-x-2';
+          msgBox.innerHTML = `
+            <i class="fa-solid fa-circle-check text-emerald-600 mt-0.5"></i>
+            <div>
+              <span class="font-bold block">${escHtml(data.message || 'Código enviado com sucesso!')}</span>
+              ${data.codigo_verificacao ? `<span class="text-[11px] text-emerald-700">Código gerado: <strong class="font-mono text-xs bg-emerald-100 px-1.5 py-0.5 rounded">${escHtml(data.codigo_verificacao)}</strong></span>` : ''}
+            </div>
+          `;
+          msgBox.classList.remove('hidden');
+        }
+        const inputCodigo = document.getElementById('codigoVerificacaoRecuperacao');
+        if (inputCodigo && data.codigo_verificacao) {
+          inputCodigo.value = data.codigo_verificacao;
+        }
+        document.getElementById('etapaRecuperacao1')?.classList.add('hidden');
+        document.getElementById('etapaRecuperacao2')?.classList.remove('hidden');
+      } catch (err) {
+        if (msgBox) {
+          msgBox.className = 'p-3 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-900 flex items-start space-x-2';
+          msgBox.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mt-0.5"></i><div>${escHtml(err.message)}</div>`;
+          msgBox.classList.remove('hidden');
+        }
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-paper-plane mr-1.5"></i><span>Enviar Código de Recuperação</span>';
+        }
+      }
+    }
+
+    async function redefinirSenhaComCodigoLogin(e) {
+      if (e) e.preventDefault();
+      const codigo = document.getElementById('codigoVerificacaoRecuperacao')?.value?.trim();
+      const novaSenha = document.getElementById('novaSenhaRecuperacao')?.value?.trim();
+      const confSenha = document.getElementById('confirmaNovaSenhaRecuperacao')?.value?.trim();
+      const btn = document.getElementById('btnConfirmarRedefinicao');
+      const msgBox = document.getElementById('msgRecuperacaoBox');
+      if (!codigo || !novaSenha) {
+        if (msgBox) {
+          msgBox.className = 'p-3 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-900 flex items-start space-x-2';
+          msgBox.innerHTML = 'Informe o código e a nova senha.';
+          msgBox.classList.remove('hidden');
+        }
+        return;
+      }
+      if (novaSenha.length < 4) {
+        if (msgBox) {
+          msgBox.className = 'p-3 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-900 flex items-start space-x-2';
+          msgBox.innerHTML = 'A senha deve possuir ao menos 4 caracteres.';
+          msgBox.classList.remove('hidden');
+        }
+        return;
+      }
+      if (novaSenha !== confSenha) {
+        if (msgBox) {
+          msgBox.className = 'p-3 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-900 flex items-start space-x-2';
+          msgBox.innerHTML = 'As senhas digitadas não coincidem.';
+          msgBox.classList.remove('hidden');
+        }
+        return;
+      }
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Redefinindo...';
+      }
+      try {
+        let data;
+        if (window.apiClient) {
+          data = await window.apiClient.auth.redefinirSenha({ codigo, nova_senha: novaSenha });
+        } else {
+          const res = await fetch('/api/auth/redefinir-senha', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ codigo, nova_senha: novaSenha })
+          });
+          data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Erro ao redefinir senha.');
+        }
+
+        document.getElementById('senha').value = novaSenha;
+        fecharModalEsqueciSenhaLogin();
+        showAlert('Senha alterada! Preencha seus dados ou clique em Entrar.', 'success');
+      } catch (err) {
+        if (msgBox) {
+          msgBox.className = 'p-3 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-900 flex items-start space-x-2';
+          msgBox.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mt-0.5"></i><div>${escHtml(err.message)}</div>`;
+          msgBox.classList.remove('hidden');
+        }
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-key mr-1.5"></i><span>Redefinir e Salvar Nova Senha</span>';
+        }
+      }
+    }
+  </script>
+
+  <!-- Modal Esqueci Minha Senha -->
+  <div id="modalEsqueciSenhaLogin" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-200 overflow-hidden transform transition-all">
+      <div class="bg-[#0f3b7a] text-white px-5 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-amber-400">
+            <i class="fa-solid fa-key text-sm"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm text-white">Recuperação de Senha</h3>
+            <p class="text-[11px] text-blue-200">Disparo automático de e-mail institucional / cadastrado</p>
+          </div>
+        </div>
+        <button type="button" onclick="fecharModalEsqueciSenhaLogin()" class="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div id="msgRecuperacaoBox" class="hidden"></div>
+        <form id="etapaRecuperacao1" onsubmit="solicitarCodigoRecuperacaoLogin(event)" class="space-y-4">
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Informe seu <strong>E-mail cadastrado</strong> ou <strong>CPF</strong> para receber o código seguro de recuperação de senha:
+          </p>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              E-mail ou CPF
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-solid fa-envelope text-xs"></i>
+              </div>
+              <input 
+                type="text" 
+                id="recuperarIdentificador" 
+                required 
+                placeholder="Ex: aluno@exemplo.com ou CPF" 
+                class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-none transition"
+              >
+            </div>
+          </div>
+          <button 
+            type="submit" 
+            id="btnEnviarCodigoRecuperacao" 
+            class="w-full py-2.5 px-4 bg-[#0f3b7a] hover:bg-blue-900 text-white font-bold rounded-xl text-xs uppercase tracking-wider shadow-sm transition flex items-center justify-center space-x-1.5 cursor-pointer"
+          >
+            <i class="fa-solid fa-paper-plane mr-1.5"></i>
+            <span>Enviar Código de Recuperação</span>
+          </button>
+        </form>
+        <form id="etapaRecuperacao2" onsubmit="redefinirSenhaComCodigoLogin(event)" class="space-y-3.5 hidden">
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Informe o <strong>código de 6 dígitos</strong> recebido e defina sua <strong>nova senha</strong> de acesso:
+          </p>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              Código de Verificação (6 dígitos)
+            </label>
+            <input 
+              type="text" 
+              id="codigoVerificacaoRecuperacao" 
+              required 
+              maxlength="6" 
+              placeholder="000000" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-center font-mono font-black text-lg tracking-widest text-[#0f3b7a] focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-none"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              Nova Senha
+            </label>
+            <input 
+              type="password" 
+              id="novaSenhaRecuperacao" 
+              required 
+              placeholder="Mínimo 4 caracteres" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-none"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              Confirmar Nova Senha
+            </label>
+            <input 
+              type="password" 
+              id="confirmaNovaSenhaRecuperacao" 
+              required 
+              placeholder="Repita a nova senha" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-none"
+            >
+          </div>
+          <div class="flex items-center space-x-2 pt-1">
+            <button 
+              type="button" 
+              onclick="document.getElementById('etapaRecuperacao2').classList.add('hidden'); document.getElementById('etapaRecuperacao1').classList.remove('hidden');" 
+              class="px-3 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold transition"
+            >
+              Voltar
+            </button>
+            <button 
+              type="submit" 
+              id="btnConfirmarRedefinicao" 
+              class="flex-1 py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider shadow-sm transition flex items-center justify-center space-x-1.5 cursor-pointer"
+            >
+              <i class="fa-solid fa-key mr-1.5"></i>
+              <span>Redefinir e Salvar Nova Senha</span>
+            </button>
+          </div>
+        </form>
+      </div>
+      <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+        <span class="flex items-center gap-1.5">
+          <i class="fa-solid fa-shield-halved text-emerald-600"></i>
+          <span>Autenticação Segura FAETERJ-Rio</span>
+        </span>
+        <button type="button" onclick="fecharModalEsqueciSenhaLogin()" class="text-slate-600 hover:text-slate-900 font-bold">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
