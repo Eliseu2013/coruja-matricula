@@ -95,7 +95,6 @@ A secretaria pode importar o PDF da chamada pela tela **Lista de Convocados**. O
 - Autenticação com JWT e senhas com bcrypt, incluindo controle de sessão por versão (trocar a senha derruba logins antigos).
 - Validar dados brasileiros de verdade: dígito verificador de CPF e NIS, formatos de RG, CEP e título de eleitor.
 - Proteger uma aplicação web: Helmet, CSP, rate limiting, prevenção de path traversal e sanitização de entrada.
-- Integrar uma API de IA (Gemini) para extrair dados de documentos, com fallback quando a chave não está configurada.
 - Ler PDFs no servidor com pdfjs-dist e transformar o texto em dados estruturados.
 - Escrever testes automatizados que sobem o servidor de verdade e exercitam as rotas.
 - Cuidar de dados pessoais (LGPD): nada sensível vai para o Git, backups com retenção e log de auditoria.
