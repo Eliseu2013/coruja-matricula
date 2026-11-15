@@ -8,10 +8,9 @@ Sistema web desenvolvido como trabalho de faculdade (curso de Análise e Desenvo
 
 **Portal do candidato**
 - Primeiro acesso com CPF e número de inscrição do ENEM (só quem está na lista de convocados consegue criar conta).
-- Preenchimento da ficha de matrícula em etapas, com validação em tempo real (CPF com dígito verificador, CEP, datas, RG, título de eleitor, NIS do CadÚnico).
+- Preenchimento da ficha de matrícula em etapas: (CPF com dígito verificador, CEP, datas, RG, título de eleitor, NIS do CadÚnico).
 - Busca automática de endereço pelo CEP (ViaCEP).
 - Envio dos documentos (certidão, RG, comprovante de residência, histórico escolar).
-- Leitura automática dos documentos por IA (Google Gemini) para pré-preencher a ficha. Opcional.
 - Comprovante de matrícula com número de protocolo para download.
 - Recuperação de senha por CPF + data de nascimento.
 
